@@ -48,6 +48,9 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
   const [editMode, setEditMode] = useState<'single' | 'series'>('single');
   const [isClosing, setIsClosing] = useState(false);
 
+  // Find the source-of-truth transaction to keep history stable during edits
+  const originalTx = data.transactions.find((t) => t.id === transactionId);
+
   useEffect(() => {
     if (transactionId) {
       const found = data.transactions.find((t) => t.id === transactionId);
@@ -74,7 +77,9 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
     handleClose();
   };
 
-  const sortedHistory = tx.history ? [...tx.history].reverse() : [];
+  // History should be based on the saved record, not the current draft state
+  const historySource = originalTx?.history || [];
+  const sortedHistory = [...historySource].reverse();
 
   const getAccountName = (id?: string) => {
     if (!id) return 'None';
@@ -92,6 +97,7 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
     newVal: any;
     formatFn?: (v: any) => string;
   }) => {
+    // Strict equality check to prevent showing unchanged rows
     if (oldVal === newVal || (oldVal === undefined && newVal === undefined)) return null;
 
     const displayOld = formatFn ? formatFn(oldVal) : oldVal;
@@ -248,17 +254,6 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
                     </optgroup>
                   ))}
                 </select>
-                {/* <select
-                  value={tx.cycleKey}
-                  onChange={(e) => setTx({ ...tx, cycleKey: e.target.value })}
-                  className={`${inputBaseClass} appearance-none`}
-                >
-                  {masterCycles.map((cycle) => (
-                    <option key={cycle.key} value={cycle.key}>
-                      {format(parseISO(cycle.date), 'MMM dd, yyyy')} ({cycle.absoluteSequence})
-                    </option>
-                  ))}
-                </select> */}
               </div>
             </div>
 
@@ -391,6 +386,13 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
                 {sortedHistory.length > 0 ? (
                   sortedHistory.map((entry, i) => {
                     const s = entry.snapshot;
+                    // FIX: The 'new' value for this historical step is the state it became.
+                    // If it's the most recent change (index 0), it became the 'originalTx' state.
+                    // Otherwise, it became the snapshot of the entry above it in the list.
+                    const nextState = i === 0 ? originalTx : sortedHistory[i - 1].snapshot;
+
+                    if (!nextState) return null;
+
                     return (
                       <div key={i} className="relative pl-6">
                         <div className="absolute left-0 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-slate-300 ring-1 ring-slate-200 dark:border-[#1C1C1E] dark:bg-slate-600 dark:ring-white/10" />
@@ -405,42 +407,42 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
                         </div>
 
                         <div className="space-y-0.5 rounded-lg border border-black/5 bg-white p-3 shadow-sm dark:border-white/5 dark:bg-black/20">
-                          <DiffRow label="Name" oldVal={s.name} newVal={tx.name} />
+                          <DiffRow label="Name" oldVal={s.name} newVal={nextState.name} />
                           <DiffRow
                             label="Amount"
                             oldVal={s.amount}
-                            newVal={tx.amount}
+                            newVal={nextState.amount}
                             formatFn={(v) => `₱${Number(v).toLocaleString()}`}
                           />
                           <DiffRow
                             label="Category"
                             oldVal={s.typeId}
-                            newVal={tx.typeId}
+                            newVal={nextState.typeId}
                             formatFn={(id) => getFullTypeName(id)}
                           />
                           <DiffRow
                             label="Source"
                             oldVal={s.accountId}
-                            newVal={tx.accountId}
+                            newVal={nextState.accountId}
                             formatFn={(id) => getAccountName(id)}
                           />
                           <DiffRow
                             label="Dest"
                             oldVal={s.toAccountId}
-                            newVal={tx.toAccountId}
+                            newVal={nextState.toAccountId}
                             formatFn={(id) => getAccountName(id)}
                           />
-                          <DiffRow label="Cycle" oldVal={s.cycleKey} newVal={tx.cycleKey} />
+                          <DiffRow label="Cycle" oldVal={s.cycleKey} newVal={nextState.cycleKey} />
                           <DiffRow
                             label="Date"
                             oldVal={s.date}
-                            newVal={tx.date}
+                            newVal={nextState.date}
                             formatFn={(v) => (v ? format(parseISO(v), 'MM/dd/yy') : '')}
                           />
                           <DiffRow
                             label="Status"
                             oldVal={s.isPaid}
-                            newVal={tx.isPaid}
+                            newVal={nextState.isPaid}
                             formatFn={(v) => (v ? 'Liquidated' : 'Planned')}
                           />
                         </div>
