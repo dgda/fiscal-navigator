@@ -146,6 +146,10 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
                   {getFullTypeName(tx.typeId)}
                 </span>
                 <span className="h-0.5 w-0.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+                <span className="font-mono text-[9px] text-slate-400 dark:text-slate-500/90">
+                  {format(tx.created_at, 'MMM dd, yyyy HH:mm')}
+                </span>
+                <span className="h-0.5 w-0.5 rounded-full bg-slate-300 dark:bg-slate-600" />
                 <span className="font-mono text-[9px] text-slate-300 dark:text-slate-600">
                   #{tx.id.substring(0, 6)}
                 </span>
