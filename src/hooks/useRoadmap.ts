@@ -148,6 +148,10 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
       const realityCheck = cumActualSaved - remainingPlannedInThisCycle;
       const isForecasting = realityCheck < 0;
 
+      const prevProjected = cumEstSaved - netFlowProjected;
+      const projectedCheck = prevProjected - estimatedExpenses;
+      const isProjectedForecasting = projectedCheck < 0;
+
       return {
         ...opt,
         txs: cycleTxs,
@@ -163,6 +167,8 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
           IS_FORECASTING: isForecasting,
           CYCLE_BURN_RATE: burnRateSoFar,
           LIQUIDITY_RUNWAY: liquidityRunway,
+          PROJECTED_CHECK: projectedCheck,
+          IS_PROJECTED_FORECASTING: isProjectedForecasting,
         },
       };
     });

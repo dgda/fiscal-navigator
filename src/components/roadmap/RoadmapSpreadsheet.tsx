@@ -399,6 +399,8 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                   IS_FORECASTING,
                   REALITY_CHECK,
                   LIQUIDITY_RUNWAY,
+                  PROJECTED_CHECK,
+                  IS_PROJECTED_FORECASTING,
                 } = cycleData.headers;
                 const unpaidInCycle = PLANNED - CLEARED;
                 const prevActual = Number(netActual) - SURPLUS;
@@ -543,14 +545,16 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                       </div>
 
                       {/* STATUS INDICATOR */}
-                      <div className="mb-4">
+                      <div className="mb-1 mt-2">
                         <div className="group relative">
                           <div className="pointer-events-none absolute -top-2 left-1/2 z-[1000] w-max -translate-x-1/2 -translate-y-full scale-95 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
                             <div className="rounded-2xl border border-black/5 bg-white/90 p-3 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#1C1C1E]/90">
                               <div
                                 className={`mb-1.5 border-b border-black/5 pb-1 text-[8px] font-black uppercase tracking-widest dark:border-white/5 ${IS_FORECASTING ? 'text-rose-500' : 'text-emerald-500'}`}
                               >
-                                {IS_FORECASTING ? 'Liquidity Gap' : 'Liquidity Surplus'}
+                                {IS_FORECASTING
+                                  ? 'Actual Liquidity Gap'
+                                  : 'Actual Liquidity Surplus'}
                               </div>
                               <div className="flex min-w-[150px] flex-col gap-1.5">
                                 <div className="flex items-center justify-between gap-4">
@@ -600,7 +604,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                                   <div className="relative h-1.5 w-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
                                 </div>
                                 <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-rose-700/90 dark:text-rose-400/80">
-                                  Liquidity Gap
+                                  Actual Liquidity Gap
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5">
@@ -623,7 +627,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                               <div className="flex items-center gap-2">
                                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] dark:bg-emerald-400" />
                                 <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-emerald-700/90 dark:text-emerald-400/80">
-                                  Liquidity Surplus
+                                  Actual Liquidity Surplus
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5">
@@ -634,17 +638,114 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                                     maximumFractionDigits: 2,
                                   })}
                                 </span>
-                                {/* <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400/50">
-                                  ₱
-                                  {Math.abs(REALITY_CHECK).toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })}
-                                </span> */}
                                 <ShieldCheck
                                   size={10}
                                   strokeWidth={3}
                                   className="text-emerald-500/60"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* PROJECTED STATUS INDICATOR */}
+                      <div className="mb-2">
+                        <div className="group relative">
+                          <div className="pointer-events-none absolute -top-2 left-1/2 z-[1000] w-max -translate-x-1/2 -translate-y-full scale-95 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
+                            <div className="rounded-2xl border border-black/5 bg-white/90 p-3 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#1C1C1E]/90">
+                              <div
+                                className={`mb-1.5 border-b border-black/5 pb-1 text-[8px] font-black uppercase tracking-widest dark:border-white/5 ${IS_PROJECTED_FORECASTING ? 'text-rose-500' : 'text-emerald-500'}`}
+                              >
+                                {IS_PROJECTED_FORECASTING
+                                  ? 'Projected Liquidity Gap'
+                                  : 'Projected Liquidity Surplus'}
+                              </div>
+                              <div className="flex min-w-[150px] flex-col gap-1.5">
+                                <div className="flex items-center justify-between gap-4">
+                                  <span className="text-[9px] text-slate-500">
+                                    Projected Current Liquidity
+                                  </span>
+                                  <span className="font-mono text-[9px] font-bold text-blue-700 dark:text-blue-500">
+                                    ₱
+                                    {Number(prevProjected).toLocaleString(undefined, {
+                                      minimumFractionDigits: 2,
+                                    })}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between gap-4">
+                                  <span className="text-[9px] text-slate-500">Planned Bills</span>
+                                  <span className="font-mono text-[9px] font-bold text-rose-500">
+                                    -₱
+                                    {PLANNED.toLocaleString(undefined, {
+                                      minimumFractionDigits: 2,
+                                    })}
+                                  </span>
+                                </div>
+                                <div className="mt-1 flex items-center justify-between gap-4 border-t border-black/5 pt-1 dark:border-white/5">
+                                  <span className="text-[9px] font-black uppercase text-slate-400">
+                                    Projected Survival Margin
+                                  </span>
+                                  <span
+                                    className={`font-mono text-[9px] font-black ${PROJECTED_CHECK >= 0 ? 'text-emerald-600' : 'text-rose-700 dark:text-rose-600'}`}
+                                  >
+                                    ₱
+                                    {PROJECTED_CHECK.toLocaleString(undefined, {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mx-auto h-2 w-2 -translate-y-1 rotate-45 border-b border-r border-black/5 bg-white/90 dark:border-white/10 dark:bg-[#1C1C1E]/90" />
+                          </div>
+                          {IS_PROJECTED_FORECASTING ? (
+                            <div className="group relative flex items-center justify-between overflow-hidden rounded-full border border-rose-500/15 bg-rose-500/[0.03] py-1.5 pl-2.5 pr-3 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all hover:bg-rose-500/[0.06] dark:border-rose-400/10 dark:bg-rose-400/[0.02]">
+                              <div className="flex items-center gap-2">
+                                <div className="relative flex h-1.5 w-1.5 items-center justify-center">
+                                  <div className="absolute inset-0 animate-ping rounded-full bg-rose-500/20" />
+                                  <div className="relative h-1.5 w-1.5 rounded-full bg-rose-500/60 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                                </div>
+                                <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-rose-700/50 dark:text-rose-400/40">
+                                  Projected Liquidity Gap
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-[11px] font-black tracking-tight text-rose-700/60 dark:text-rose-300/60">
+                                  -₱
+                                  {Math.abs(PROJECTED_CHECK).toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </span>
+                                <AlertTriangle
+                                  size={10}
+                                  strokeWidth={3}
+                                  className="text-rose-500/20"
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="group relative flex items-center justify-between overflow-hidden rounded-full border border-emerald-500/15 bg-emerald-500/[0.03] py-1.5 pl-2.5 pr-3 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all hover:bg-emerald-500/[0.06] dark:border-emerald-400/10 dark:bg-emerald-400/[0.02]">
+                              <div className="flex items-center gap-2">
+                                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500/60 shadow-[0_0_8px_rgba(16,185,129,0.5)] dark:bg-emerald-400" />
+                                <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-emerald-700/40 dark:text-emerald-400/30">
+                                  Projected Liquidity Surplus
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-[11px] font-black tracking-tight text-emerald-700/60 dark:text-emerald-300/60">
+                                  ₱
+                                  {Math.abs(PROJECTED_CHECK).toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </span>
+                                <ShieldCheck
+                                  size={10}
+                                  strokeWidth={3}
+                                  className="text-emerald-500/10"
                                 />
                               </div>
                             </div>
