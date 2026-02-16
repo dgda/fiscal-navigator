@@ -10,6 +10,8 @@ import {
   lastDayOfMonth,
   isBefore,
   startOfDay,
+  addDays,
+  addWeeks,
 } from 'date-fns';
 import {
   ArrowLeft,
@@ -52,6 +54,10 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
   const [isPaid, setIsPaid] = useState(true);
   const [isRecurring, setIsRecurring] = useState(false);
   const [untilDate, setUntilDate] = useState(format(addMonths(new Date(), 12), 'yyyy-MM-dd'));
+
+  // NEW RECURRENCE STATE
+  const [recurrenceUnit, setRecurrenceUnit] = useState<'days' | 'weeks' | 'months'>('months');
+  const [recurrenceInterval, setRecurrenceInterval] = useState(1);
 
   useEffect(() => {
     if (!isPlanned) setIsPaid(true);
@@ -107,15 +113,29 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
       }
 
       if (isRecurring) {
-        let currentPointer = addMonths(anchorDate, 1);
+        // Helper to calculate the next occurrence based on frequency unit
+        const getNextOccurrence = (d: Date) => {
+          if (recurrenceUnit === 'days') return addDays(d, recurrenceInterval);
+          if (recurrenceUnit === 'weeks') return addWeeks(d, recurrenceInterval);
+
+          // Monthly logic with day-of-month persistence (e.g., 31st becomes 30th/28th)
+          const nextMonth = addMonths(d, recurrenceInterval);
+          const lastDay = lastDayOfMonth(nextMonth).getDate();
+          const targetDay = dayOfMonth > lastDay ? lastDay : dayOfMonth;
+          return setDate(nextMonth, targetDay);
+        };
+
+        let currentPointer = getNextOccurrence(anchorDate);
         const endPointer = startOfDay(parseISO(untilDate));
+
         while (
           isBefore(currentPointer, endPointer) ||
-          currentPointer.getTime() === endPointer.getTime()
+          format(currentPointer, 'yyyy-MM-dd') === format(endPointer, 'yyyy-MM-dd')
         ) {
-          const lastDay = lastDayOfMonth(currentPointer).getDate();
-          const targetDay = dayOfMonth > lastDay ? lastDay : dayOfMonth;
-          const occurrenceDate = setDate(currentPointer, targetDay);
+          const occurrenceDate = currentPointer;
+
+          // SMART CYCLE DETERMINATION:
+          // Finds the latest cycle such that cycleDate <= occurrenceDate
           const targetCycle = masterCycles
             .filter(
               (c: any) =>
@@ -123,6 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                 c.date === format(occurrenceDate, 'yyyy-MM-dd'),
             )
             .pop();
+
           if (targetCycle) {
             batch.push({
               ...primaryTx,
@@ -134,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
               history: [],
             });
           }
-          currentPointer = addMonths(currentPointer, 1);
+          currentPointer = getNextOccurrence(currentPointer);
         }
       }
 
@@ -145,6 +166,8 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
       setIsPlanned(false);
       setIsPaid(true);
       setIsRecurring(false);
+      setRecurrenceInterval(1);
+      setRecurrenceUnit('months');
     } catch (err) {
       console.error('Commit Failed', err);
     }
@@ -166,7 +189,6 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
   );
 
   return (
-    // UPDATED: Raised z-index to [500] to sit above the Spreadsheet's headers and Audit Panel
     <div className="relative z-[500] flex h-full shrink-0">
       <aside
         className={`${sidebarBase} ${
@@ -454,9 +476,37 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                       onChange={(e) => setIsRecurring(e.target.checked)}
                     />
                   </label>
+
                   {isRecurring && (
-                    <div className="animate-in slide-in-from-top-2 bg-purple-50/30 px-3.5 py-3 dark:bg-purple-900/10">
-                      <div className="flex items-center gap-3">
+                    <div className="animate-in slide-in-from-top-2 space-y-3 bg-purple-50/30 px-3.5 py-4 dark:bg-purple-900/10">
+                      {/* NEW: RECURRENCE FREQUENCY CONTROLS */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70">
+                          Frequency
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="1"
+                            value={recurrenceInterval}
+                            onChange={(e) =>
+                              setRecurrenceInterval(Math.max(1, Number(e.target.value)))
+                            }
+                            className="w-12 rounded bg-white/50 px-1 py-0.5 text-center text-[11px] font-bold text-purple-700 outline-none ring-1 ring-purple-200 dark:bg-black/40 dark:text-purple-300 dark:ring-purple-900/30"
+                          />
+                          <select
+                            value={recurrenceUnit}
+                            onChange={(e) => setRecurrenceUnit(e.target.value as any)}
+                            className="bg-transparent text-[11px] font-bold text-purple-700 outline-none dark:text-purple-300"
+                          >
+                            <option value="days">Days</option>
+                            <option value="weeks">Weeks</option>
+                            <option value="months">Months</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between border-t border-purple-100/50 pt-1 dark:border-purple-800/30">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70">
                           Until
                         </span>
@@ -511,17 +561,18 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
         )}
       </aside>
 
-      {/* --- GHOST PILL TOGGLE: Elevated to [10000] within the [500] parent --- */}
       <div
         className={`fixed top-[20%] z-[10000] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${props.isOpen ? 'left-[308px]' : 'left-0'}`}
       >
         <button
           onClick={props.onToggle}
-          className={`group relative flex h-14 w-6 items-center justify-center transition-all duration-500 ${
-            props.isOpen
-              ? 'bg-transparent opacity-40 hover:opacity-100'
-              : 'rounded-r-2xl bg-white/80 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] ring-1 ring-black/5 backdrop-blur-xl dark:bg-[#1C1C1E]/80 dark:ring-white/10'
-          } `}
+          // className={`group relative flex h-14 w-6 items-center justify-center transition-all duration-500  ${
+          className={`group relative flex h-14 w-6 items-center justify-center rounded-r-2xl bg-white/80 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] ring-1 ring-black/5 backdrop-blur-xl transition-all duration-500 dark:bg-[#1C1C1E]/80 dark:ring-white/10`}
+          //   props.isOpen
+          //     ? 'bg-transparent opacity-40 hover:opacity-100'
+          //     : 'rounded-r-2xl bg-white/80 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] ring-1 ring-black/5 backdrop-blur-xl dark:bg-[#1C1C1E]/80 dark:ring-white/10'
+          // }
+          //  `}
         >
           <div
             className={`transition-all duration-500 ${props.isOpen ? 'rotate-180 text-slate-400' : 'rotate-0 text-blue-500'}`}
