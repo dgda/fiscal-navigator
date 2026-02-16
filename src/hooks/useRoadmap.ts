@@ -187,16 +187,21 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
       const cycle = futureCycles[i];
       const unpaidPlanned = Math.max(0, cycle.headers.PLANNED - cycle.headers.CLEARED);
 
+      // Calculate actual days in THIS specific cycle
+      const currentD = parseISO(cycle.date);
+      const nextD = futureCycles[i + 1]
+        ? parseISO(futureCycles[i + 1].date)
+        : addDays(currentD, payoutConfig.fixedIntervalDays || 15); // Fallback to config
+
+      const daysInCycle = Math.max(0, differenceInDays(nextD, currentD));
+
       if (remainingRealCash >= unpaidPlanned) {
         remainingRealCash -= unpaidPlanned;
-        const currentD = parseISO(cycle.date);
-        const nextD = futureCycles[i + 1]
-          ? parseISO(futureCycles[i + 1].date)
-          : addDays(currentD, 15);
-        bDays += Math.max(0, differenceInDays(nextD, currentD));
+        bDays += daysInCycle;
       } else {
+        // Calculate the partial month/cycle coverage
         const ratio = unpaidPlanned > 0 ? remainingRealCash / unpaidPlanned : 1;
-        bDays += Math.floor(ratio * 15);
+        bDays += Math.floor(ratio * daysInCycle);
         break;
       }
     }
