@@ -184,7 +184,10 @@ const SortableTransactionRow = ({
           className={`font-mono text-[11px] font-black tabular-nums tracking-tight ${getCurrencyColor()}`}
         >
           <span className="mr-px text-[9px] font-medium opacity-40">₱</span>
-          {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          {tx.amount.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
         </span>
         <button
           onClick={(e) => {
@@ -534,6 +537,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                                     ₱
                                     {prevActual.toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
                                     })}
                                   </span>
                                 </div>
@@ -545,6 +549,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                                     {SURPLUS >= 0 ? '+' : ''}₱
                                     {SURPLUS.toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
                                     })}
                                   </span>
                                 </div>
@@ -582,6 +587,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                                     ₱
                                     {prevProjected.toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
                                     })}
                                   </span>
                                 </div>
@@ -636,6 +642,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                                     ₱
                                     {Number(netActual).toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
                                     })}
                                   </span>
                                 </div>
@@ -647,6 +654,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                                     -₱
                                     {unpaidInCycle.toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
                                     })}
                                   </span>
                                 </div>
@@ -660,6 +668,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                                     ₱
                                     {REALITY_CHECK.toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
                                     })}
                                   </span>
                                 </div>
@@ -740,6 +749,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                                     ₱
                                     {Number(prevProjected).toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
                                     })}
                                   </span>
                                 </div>
@@ -749,6 +759,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                                     -₱
                                     {PLANNED.toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
                                     })}
                                   </span>
                                 </div>
