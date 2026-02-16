@@ -399,6 +399,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                   IS_FORECASTING,
                   REALITY_CHECK,
                   LIQUIDITY_RUNWAY,
+                  PROJECTED_LIQUIDITY_RUNWAY,
                   PROJECTED_CHECK,
                   IS_PROJECTED_FORECASTING,
                 } = cycleData.headers;
@@ -421,30 +422,100 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                         <h3 className="text-[13px] font-black uppercase tracking-tight text-slate-900 dark:text-white">
                           {cycleData.display}
                         </h3>
-                        <div className="flex items-center self-center overflow-hidden rounded-full border-[0.5px] border-black/10 bg-white/60 py-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] backdrop-blur-md transition-all dark:border-white/10 dark:bg-white/[0.03] dark:shadow-none">
-                          {/* The Context Label (Improved wording) */}
-                          <span className="pl-3 pr-1.5 text-[8px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500/60">
-                            Net Endurance
-                          </span>
-
-                          {/* The Value (Liquidity Runway) */}
-                          <span className="flex items-center pr-2.5 text-[10px] font-bold tabular-nums tracking-tight text-slate-700 dark:text-slate-200">
-                            {LIQUIDITY_RUNWAY.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                            <span className="ml-1 text-[7px] font-black uppercase tracking-tighter opacity-30">
-                              cycles
+                        <div className="flex items-center gap-1 self-center rounded-full border border-black/[0.05] bg-white/50 p-0.5 py-[0.0625rem] pl-1 shadow-[0_1px_2px_rgba(0,0,0,0.02)] backdrop-blur-md transition-all dark:border-white/[0.06] dark:bg-zinc-900/30">
+                          {/* ACTUAL METRIC SECTION */}
+                          <div
+                            className={`flex items-center gap-1 rounded-full px-1.5 py-0.5 transition-colors duration-500 ${
+                              LIQUIDITY_RUNWAY < 0
+                                ? 'bg-rose-500/10 dark:bg-rose-500/20'
+                                : 'bg-transparent'
+                            }`}
+                          >
+                            <div
+                              className={`h-1 w-1 rounded-full ${
+                                LIQUIDITY_RUNWAY < 0 ? 'bg-rose-500' : 'bg-emerald-500/80'
+                              }`}
+                            />
+                            <span className="text-[7px] font-bold uppercase tracking-tight text-slate-400 dark:text-zinc-500">
+                              Act
                             </span>
-                          </span>
+                            <span
+                              className={`text-[9px] font-bold tabular-nums ${
+                                LIQUIDITY_RUNWAY < 0
+                                  ? 'text-rose-600 dark:text-rose-400'
+                                  : 'text-slate-700 dark:text-zinc-200'
+                              }`}
+                            >
+                              {LIQUIDITY_RUNWAY.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                              <span
+                                className={`ml-0.5 text-[7px] font-medium ${
+                                  LIQUIDITY_RUNWAY < 0
+                                    ? 'text-rose-600/40'
+                                    : 'text-slate-400/50 dark:text-zinc-600'
+                                }`}
+                              >
+                                cyc
+                              </span>
+                            </span>
+                          </div>
 
-                          {/* The Vertical Hairline Divider */}
-                          <div className="h-3 w-[0.5px] bg-black/10 dark:bg-white/10" />
+                          {/* HAIRLINE DIVIDER (Hidden if either adjacent section is highlighted to prevent visual clutter) */}
+                          <div
+                            className={`h-2 w-[0.5px] bg-black/5 dark:bg-white/10 ${
+                              LIQUIDITY_RUNWAY < 0 || PROJECTED_LIQUIDITY_RUNWAY < 0
+                                ? 'opacity-0'
+                                : 'opacity-100'
+                            }`}
+                          />
 
-                          {/* The Label (Date) */}
-                          <span className="pl-2.5 pr-3 text-[9px] font-medium uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
-                            {cycleData.dateLabel}
-                          </span>
+                          {/* PROJECTED METRIC SECTION */}
+                          <div
+                            className={`flex items-center gap-1 rounded-full px-1.5 py-0.5 transition-colors duration-500 ${
+                              PROJECTED_LIQUIDITY_RUNWAY < 0
+                                ? 'bg-rose-500/10 dark:bg-rose-500/20'
+                                : 'bg-transparent'
+                            }`}
+                          >
+                            <div
+                              className={`h-1 w-1 rounded-full ${
+                                PROJECTED_LIQUIDITY_RUNWAY < 0 ? 'bg-rose-500' : 'bg-blue-500/80'
+                              }`}
+                            />
+                            <span className="text-[7px] font-bold uppercase tracking-tight text-slate-400 dark:text-zinc-500">
+                              Prj
+                            </span>
+                            <span
+                              className={`text-[9px] font-bold tabular-nums ${
+                                PROJECTED_LIQUIDITY_RUNWAY < 0
+                                  ? 'text-rose-600 dark:text-rose-400'
+                                  : 'text-slate-700 dark:text-zinc-200'
+                              }`}
+                            >
+                              {PROJECTED_LIQUIDITY_RUNWAY.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                              <span
+                                className={`ml-0.5 text-[7px] font-medium ${
+                                  PROJECTED_LIQUIDITY_RUNWAY < 0
+                                    ? 'text-rose-600/40'
+                                    : 'text-slate-400/50 dark:text-zinc-600'
+                                }`}
+                              >
+                                cyc
+                              </span>
+                            </span>
+                          </div>
+
+                          {/* DATE TAG (Right-aligned End-cap) */}
+                          <div className="ml-0.5 flex h-4 items-center rounded-full bg-slate-900/[0.04] px-2 dark:bg-white/[0.06]">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-400">
+                              {cycleData.dateLabel}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
@@ -600,7 +671,6 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                             <div className="group relative flex items-center justify-between overflow-hidden rounded-full border border-rose-500/15 bg-rose-500/[0.03] py-1.5 pl-2.5 pr-3 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all hover:bg-rose-500/[0.06] dark:border-rose-400/10 dark:bg-rose-400/[0.02]">
                               <div className="flex items-center gap-2">
                                 <div className="relative flex h-1.5 w-1.5 items-center justify-center">
-                                  <div className="absolute inset-0 animate-ping rounded-full bg-rose-500/40" />
                                   <div className="relative h-1.5 w-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
                                 </div>
                                 <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-rose-700/90 dark:text-rose-400/80">
@@ -704,7 +774,6 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                             <div className="group relative flex items-center justify-between overflow-hidden rounded-full border border-rose-500/15 bg-rose-500/[0.03] py-1.5 pl-2.5 pr-3 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all hover:bg-rose-500/[0.06] dark:border-rose-400/10 dark:bg-rose-400/[0.02]">
                               <div className="flex items-center gap-2">
                                 <div className="relative flex h-1.5 w-1.5 items-center justify-center">
-                                  <div className="absolute inset-0 animate-ping rounded-full bg-rose-500/20" />
                                   <div className="relative h-1.5 w-1.5 rounded-full bg-rose-500/60 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
                                 </div>
                                 <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-rose-700/50 dark:text-rose-400/40">

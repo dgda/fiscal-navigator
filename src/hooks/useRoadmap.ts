@@ -151,6 +151,7 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
       const prevProjected = cumEstSaved - netFlowProjected;
       const projectedCheck = prevProjected - estimatedExpenses;
       const isProjectedForecasting = projectedCheck < 0;
+      const projectedLiquidityRunway = cumEstSaved / burnRateSoFar;
 
       return {
         ...opt,
@@ -167,6 +168,7 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
           IS_FORECASTING: isForecasting,
           CYCLE_BURN_RATE: burnRateSoFar,
           LIQUIDITY_RUNWAY: liquidityRunway,
+          PROJECTED_LIQUIDITY_RUNWAY: projectedLiquidityRunway,
           PROJECTED_CHECK: projectedCheck,
           IS_PROJECTED_FORECASTING: isProjectedForecasting,
         },
