@@ -913,7 +913,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
 
       {deleteCandidate && (
         <div
-          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/30 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[600] flex items-center justify-center bg-black/30 p-4 backdrop-blur-md"
           onClick={() => setDeleteCandidate(null)}
         >
           <div
