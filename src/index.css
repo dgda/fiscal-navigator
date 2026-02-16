@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --mac-bg: #f2f2f7;
+    --mac-surface: #ffffff;
+    --mac-border: theme('colors.slate.200');
+    --mac-text-primary: #1c1c1e;
+    --mac-text-secondary: theme('colors.slate.500');
+  }
+
+  .dark {
+    --mac-bg: #1e1e1e;
+    --mac-surface: #2d2d2d;
+    --mac-border: rgba(255, 255, 255, 0.08);
+    --mac-text-primary: #e1e1e1;
+    --mac-text-secondary: #a1a1a1;
+  }
+
+  html {
+    @apply transition-colors duration-500;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--mac-bg);
+    color: var(--mac-text-primary);
+    @apply transition-colors duration-500;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .mac-glass {
+    @apply bg-opacity-70 backdrop-blur-2xl;
+    background-color: var(--mac-surface);
+  }
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+@keyframes macos-slide-in {
+  from {
+    transform: translateX(100%) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-macos-slide-in {
+  animation: macos-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
