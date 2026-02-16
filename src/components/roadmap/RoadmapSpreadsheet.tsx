@@ -1022,27 +1022,6 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                         </SortableContext>
                       </DndContext>
                     </div>
-
-                    {/* PINNED BOTTOM RIBBON */}
-                    {/* <div className="flex shrink-0 items-center border-t border-black/[0.02] bg-slate-50/50 px-5 py-2.5 dark:border-white/5 dark:bg-white/[0.02]">
-                      {[
-                        { l: 'IN', v: INFLOW, c: 'text-emerald-600' },
-                        { l: 'OUT', v: CLEARED, c: 'text-rose-600' },
-                        { l: 'EST', v: PLANNED, c: 'text-blue-600' },
-                        { l: 'SUR', v: SURPLUS, c: 'text-slate-500' },
-                      ].map((m) => (
-                        <div key={m.l} className="flex flex-1 items-baseline gap-1.5">
-                          <span className="text-[7px] font-black text-slate-400/80">{m.l}</span>
-                          <span className={`font-mono text-[9px] font-bold tabular-nums ${m.c}`}>
-                            ₱
-                            {Math.abs(m.v || 0).toLocaleString(undefined, {
-                              maximumFractionDigits: 2,
-                              minimumFractionDigits: 2,
-                            })}
-                          </span>
-                        </div>
-                      ))}
-                    </div> */}
                   </div>
                 );
               })}
