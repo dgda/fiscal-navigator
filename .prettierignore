@@ -1,0 +1,11 @@
+# Build artifacts
+dist
+build
+node_modules
+
+# Data and Logs
+db.json
+*.log
+
+# Public assets
+public
