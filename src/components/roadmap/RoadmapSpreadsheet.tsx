@@ -44,11 +44,11 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { CycleHeaders } from '../../types/roadmap';
-import { CycleMetricPill } from './CycleHeaders/CycleMetricPills/CycleMetricPill';
-import { CycleMetricPills } from './CycleHeaders/CycleMetricPills/CycleMetricPills';
-import LiquidityGapIndicator from './CycleHeaders/LiquidityGap/LiquidityGap';
-import { BalanceCards } from './CycleHeaders/BalanceCards/BalanceCards';
-import { CycleTitle } from './CycleHeaders/CycleTitle/CycleTitle';
+import { CycleMetricPills } from './CycleHeader/CycleMetricPills/CycleMetricPills';
+import LiquidityGapIndicator from './CycleHeader/LiquidityGap/LiquidityGap';
+import { BalanceCards } from './CycleHeader/BalanceCards/BalanceCards';
+import { CycleTitle } from './CycleHeader/CycleTitle/CycleTitle';
+import { CycleHeader } from './CycleHeader/CycleHeader';
 
 interface RoadmapSpreadsheetProps {
   filter: UseRoadmapProps;
@@ -357,25 +357,6 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                   if (dateA !== dateB) return dateA - dateB;
                   return cycleData.txs.indexOf(a) - cycleData.txs.indexOf(b);
                 });
-
-                const {
-                  INFLOW,
-                  PLANNED,
-                  CLEARED,
-                  MARGIN,
-                  SURPLUS,
-                  NET_ACTUAL,
-                  NET_PROJECTED,
-                  IS_FORECASTING,
-                  REALITY_CHECK,
-                  LIQUIDITY_RUNWAY,
-                  PROJECTED_LIQUIDITY_RUNWAY,
-                  PROJECTED_CHECK,
-                  IS_PROJECTED_FORECASTING,
-                  UNPAID_IN_CYCLE,
-                  PREV_ACTUAL,
-                  PREV_PROJECTED,
-                } = cycleData.headers;
                 const firstAccruedId = processedTxs.find((t: Transaction) => t.isPlanned)?.id;
                 const firstOperatingId = processedTxs.find((t: Transaction) => !t.isPlanned)?.id;
                 const showAccruedSeparator = processedTxs.some((t: Transaction) => t.isPlanned);
@@ -386,49 +367,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                     key={cycleData.key}
                     className="flex h-full w-[432px] flex-col overflow-visible border-r border-black/[0.04] bg-[#F5F5F7] dark:border-white/5 dark:bg-[#0A0A0B]"
                   >
-                    {/* PINNED CYCLE STATS: relative z-[10] hover:z-[50] and shrink-0 to fix it */}
-                    <div className="group/cycle relative z-[10] shrink-0 border-b border-black/[0.04] bg-[#F5F5F7]/95 px-4 py-4 backdrop-blur-xl transition-all hover:z-[50] dark:border-white/5 dark:bg-[#0A0A0B]/95">
-                      <CycleTitle
-                        cycleData={cycleData}
-                        liquidityRunway={LIQUIDITY_RUNWAY}
-                        projectedLiquidityRunway={PROJECTED_LIQUIDITY_RUNWAY}
-                      />
-
-                      <BalanceCards
-                        NET_ACTUAL={NET_ACTUAL}
-                        prevActual={PREV_ACTUAL}
-                        NET_PROJECTED={NET_PROJECTED}
-                        prevProjected={PREV_PROJECTED}
-                        SURPLUS={SURPLUS}
-                        MARGIN={MARGIN}
-                      />
-
-                      {/* ACTUAL STATUS */}
-                      <LiquidityGapIndicator
-                        label="Actual Liquidity"
-                        isForecasting={IS_FORECASTING}
-                        currentLiquidity={NET_ACTUAL}
-                        currentLiquidityLabel="Current Liquidity"
-                        comparisonValue={UNPAID_IN_CYCLE}
-                        comparisonLabel="Unpaid Planned Bills"
-                        marginValue={REALITY_CHECK}
-                        marginLabel="Survival Margin"
-                      />
-
-                      {/* PROJECTED STATUS */}
-                      <LiquidityGapIndicator
-                        isProjected
-                        label="Projected Liquidity"
-                        isForecasting={IS_PROJECTED_FORECASTING}
-                        currentLiquidity={PREV_PROJECTED}
-                        currentLiquidityLabel="Projected Current Liquidity"
-                        comparisonValue={PLANNED}
-                        comparisonLabel="Planned Bills"
-                        marginValue={PROJECTED_CHECK}
-                        marginLabel="Projected Survival Margin"
-                      />
-                      <CycleMetricPills cycleHeaders={cycleData.headers} />
-                    </div>
+                    <CycleHeader cycleData={cycleData} />
 
                     {/* ONLY SCROLLABLE SECTION: Transaction list gets flex-1 and overflow-y-auto */}
                     <div

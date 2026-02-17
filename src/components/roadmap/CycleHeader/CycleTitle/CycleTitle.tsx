@@ -4,13 +4,12 @@ import { RoadmapCycle } from '../../../../types/roadmap';
 
 interface CycleTitleProps {
   cycleData: RoadmapCycle;
-  liquidityRunway: number;
-  projectedLiquidityRunway: number;
 }
 
 export const CycleTitle: React.FC<CycleTitleProps> = (props) => {
-  const { cycleData, liquidityRunway, projectedLiquidityRunway } = props;
-  const { dateLabel, display } = cycleData;
+  const { cycleData } = props;
+  const { dateLabel, display, headers } = cycleData;
+  const { LIQUIDITY_RUNWAY, PROJECTED_LIQUIDITY_RUNWAY } = headers;
 
   return (
     <div className="mb-4 flex items-center justify-between">
@@ -21,8 +20,8 @@ export const CycleTitle: React.FC<CycleTitleProps> = (props) => {
       <div className="flex items-center gap-1 self-center">
         {/* The new modular metric component */}
         <MetricBadges
-          liquidityRunway={liquidityRunway}
-          projectedLiquidityRunway={projectedLiquidityRunway}
+          liquidityRunway={LIQUIDITY_RUNWAY}
+          projectedLiquidityRunway={PROJECTED_LIQUIDITY_RUNWAY}
         />
 
         {/* Date Tag stays in the header as it is identity-specific */}
