@@ -48,6 +48,7 @@ import { CycleMetricPill } from './CycleHeaders/CycleMetricPills/CycleMetricPill
 import { CycleMetricPills } from './CycleHeaders/CycleMetricPills/CycleMetricPills';
 import LiquidityGapIndicator from './CycleHeaders/LiquidityGap/LiquidityGap';
 import { BalanceCards } from './CycleHeaders/BalanceCards/BalanceCards';
+import { CycleTitle } from './CycleHeaders/CycleTitle/CycleTitle';
 
 interface RoadmapSpreadsheetProps {
   filter: UseRoadmapProps;
@@ -387,106 +388,11 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                   >
                     {/* PINNED CYCLE STATS: relative z-[10] hover:z-[50] and shrink-0 to fix it */}
                     <div className="group/cycle relative z-[10] shrink-0 border-b border-black/[0.04] bg-[#F5F5F7]/95 px-4 py-4 backdrop-blur-xl transition-all hover:z-[50] dark:border-white/5 dark:bg-[#0A0A0B]/95">
-                      <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-[13px] font-black uppercase tracking-tight text-slate-900 dark:text-white">
-                          {cycleData.display}
-                        </h3>
-                        <div className="flex items-center gap-1 self-center rounded-full border border-black/[0.05] bg-white/50 p-0.5 py-[0.0625rem] pl-1 shadow-[0_1px_2px_rgba(0,0,0,0.02)] backdrop-blur-md transition-all dark:border-white/[0.06] dark:bg-zinc-900/30">
-                          {/* ACTUAL METRIC SECTION */}
-                          <div
-                            className={`flex items-center gap-1 rounded-full px-1.5 py-0.5 transition-colors duration-500 ${
-                              LIQUIDITY_RUNWAY < 0
-                                ? 'bg-rose-500/10 dark:bg-rose-500/20'
-                                : 'bg-transparent'
-                            }`}
-                          >
-                            <div
-                              className={`h-1 w-1 rounded-full ${
-                                LIQUIDITY_RUNWAY < 0 ? 'bg-rose-500' : 'bg-emerald-500/80'
-                              }`}
-                            />
-                            <span className="text-[7px] font-bold uppercase tracking-tight text-slate-400 dark:text-zinc-500">
-                              Act
-                            </span>
-                            <span
-                              className={`text-[9px] font-bold tabular-nums ${
-                                LIQUIDITY_RUNWAY < 0
-                                  ? 'text-rose-600 dark:text-rose-400'
-                                  : 'text-slate-700 dark:text-zinc-200'
-                              }`}
-                            >
-                              {LIQUIDITY_RUNWAY.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                              <span
-                                className={`ml-0.5 text-[7px] font-medium ${
-                                  LIQUIDITY_RUNWAY < 0
-                                    ? 'text-rose-600/40'
-                                    : 'text-slate-400/50 dark:text-zinc-600'
-                                }`}
-                              >
-                                cyc
-                              </span>
-                            </span>
-                          </div>
-
-                          {/* HAIRLINE DIVIDER (Hidden if either adjacent section is highlighted to prevent visual clutter) */}
-                          <div
-                            className={`h-2 w-[0.5px] bg-black/5 dark:bg-white/10 ${
-                              LIQUIDITY_RUNWAY < 0 || PROJECTED_LIQUIDITY_RUNWAY < 0
-                                ? 'opacity-0'
-                                : 'opacity-100'
-                            }`}
-                          />
-
-                          {/* PROJECTED METRIC SECTION */}
-                          <div
-                            className={`flex items-center gap-1 rounded-full px-1.5 py-0.5 transition-colors duration-500 ${
-                              PROJECTED_LIQUIDITY_RUNWAY < 0
-                                ? 'bg-rose-500/10 dark:bg-rose-500/20'
-                                : 'bg-transparent'
-                            }`}
-                          >
-                            <div
-                              className={`h-1 w-1 rounded-full ${
-                                PROJECTED_LIQUIDITY_RUNWAY < 0 ? 'bg-rose-500' : 'bg-blue-500/80'
-                              }`}
-                            />
-                            <span className="text-[7px] font-bold uppercase tracking-tight text-slate-400 dark:text-zinc-500">
-                              Prj
-                            </span>
-                            <span
-                              className={`text-[9px] font-bold tabular-nums ${
-                                PROJECTED_LIQUIDITY_RUNWAY < 0
-                                  ? 'text-rose-600 dark:text-rose-400'
-                                  : 'text-slate-700 dark:text-zinc-200'
-                              }`}
-                            >
-                              {PROJECTED_LIQUIDITY_RUNWAY.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                              <span
-                                className={`ml-0.5 text-[7px] font-medium ${
-                                  PROJECTED_LIQUIDITY_RUNWAY < 0
-                                    ? 'text-rose-600/40'
-                                    : 'text-slate-400/50 dark:text-zinc-600'
-                                }`}
-                              >
-                                cyc
-                              </span>
-                            </span>
-                          </div>
-
-                          {/* DATE TAG (Right-aligned End-cap) */}
-                          <div className="ml-0.5 flex h-4 items-center rounded-full bg-slate-900/[0.04] px-2 dark:bg-white/[0.06]">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-400">
-                              {cycleData.dateLabel}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                      <CycleTitle
+                        cycleData={cycleData}
+                        liquidityRunway={LIQUIDITY_RUNWAY}
+                        projectedLiquidityRunway={PROJECTED_LIQUIDITY_RUNWAY}
+                      />
 
                       <BalanceCards
                         NET_ACTUAL={NET_ACTUAL}
