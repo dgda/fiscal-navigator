@@ -1,55 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useTreasury } from '../../context/TreasuryContext';
 import { UseRoadmapProps, useRoadmap } from '../../hooks/useRoadmap';
-import {
-  CheckCircle2,
-  Circle,
-  Trash2,
-  ArrowLeftRight,
-  TrendingUp,
-  TrendingDown,
-  GripVertical,
-  CalendarDays,
-  Activity,
-  X,
-  ArrowUpRight,
-  ArrowDownRight,
-  Compass,
-  ShieldCheck,
-  BarChart3,
-  Fingerprint,
-  Repeat,
-  AlertTriangle,
-  Target,
-  Wallet,
-  PieChart,
-  Clock,
-} from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { Account, Transaction } from '../../types';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-  useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { CalendarDays, Activity, X, Compass, BarChart3, AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
+import { Transaction } from '../../types';
 import { CycleHeaders } from '../../types/roadmap';
-import { CycleMetricPills } from './CycleHeader/CycleMetricPills/CycleMetricPills';
-import LiquidityGapIndicator from './CycleHeader/LiquidityGap/LiquidityGap';
-import { BalanceCards } from './CycleHeader/BalanceCards/BalanceCards';
-import { CycleTitle } from './CycleHeader/CycleTitle/CycleTitle';
 import { CycleHeader } from './CycleHeader/CycleHeader';
-import SortableTransactionRow from './TransactionList/SortableTransactionRow';
 import TransactionList from './TransactionList/TransactionList';
 
 interface RoadmapSpreadsheetProps {
@@ -65,16 +21,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
   highlightId,
   onHighlightComplete,
 }) => {
-  const {
-    toggleExecution,
-    sync,
-    deleteSeries,
-    data,
-    getFullTypeName,
-    checkIsIncome,
-    checkIsTransfer,
-    computedAccounts,
-  } = useTreasury();
+  const { sync, deleteSeries, data } = useTreasury();
   const { roadmap, groupedCycleOptions } = useRoadmap(filter);
   const [activeMonthSummary, setActiveMonthSummary] = useState<string | null>(null);
   const [isOpening, setIsOpening] = useState(false);
@@ -83,10 +30,6 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cycleScrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const monthRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
 
   useEffect(() => {
     if (activeMonthSummary) {
