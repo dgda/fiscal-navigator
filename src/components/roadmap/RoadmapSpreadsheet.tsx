@@ -52,27 +52,30 @@ interface RoadmapSpreadsheetProps {
   onHighlightComplete: () => void;
 }
 
-const SortableTransactionRow = ({
-  tx,
-  onEdit,
-  toggleExecution,
-  getFullTypeName,
-  checkIsIncome,
-  checkIsTransfer,
-  isHighlighted,
-  onDeleteRequest,
-  computedAccounts,
-}: {
+interface SortableTransactionRowProps {
   tx: Transaction;
-  onEdit: any;
-  toggleExecution: any;
-  getFullTypeName: any;
-  checkIsIncome: any;
-  checkIsTransfer: any;
-  isHighlighted: any;
-  onDeleteRequest: any;
+  onEdit: (id: string) => void;
+  toggleExecution: (id: string) => void;
+  getFullTypeName: (typeId: string) => string;
+  checkIsIncome: (typeId: string) => boolean;
+  checkIsTransfer: (typeId: string) => boolean;
+  isHighlighted: boolean;
+  onDeleteRequest: React.Dispatch<React.SetStateAction<Transaction | null>>;
   computedAccounts: Account[];
-}) => {
+}
+
+const SortableTransactionRow = (props: SortableTransactionRowProps) => {
+  const {
+    tx,
+    onEdit,
+    toggleExecution,
+    getFullTypeName,
+    checkIsIncome,
+    checkIsTransfer,
+    isHighlighted,
+    onDeleteRequest,
+    computedAccounts,
+  } = props;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: tx.id,
   });
@@ -261,7 +264,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
     checkIsIncome,
     checkIsTransfer,
     computedAccounts,
-  } = useTreasury() as any;
+  } = useTreasury();
   const { roadmap, groupedCycleOptions } = useRoadmap(filter);
   const [activeMonthSummary, setActiveMonthSummary] = useState<string | null>(null);
   const [isOpening, setIsOpening] = useState(false);
@@ -380,8 +383,8 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
 
             {/* CYCLES WRAPPER: min-h-0 allows the flex-1 to strictly enforce the height */}
             <div className="flex h-full min-h-0 flex-1 overflow-visible">
-              {cycleMeta.map((meta: any) => {
-                const cycleData = roadmap.find((r: any) => r.key === meta.key);
+              {cycleMeta.map((meta) => {
+                const cycleData = roadmap.find((r) => r.key === meta.key);
                 if (!cycleData) return null;
 
                 const processedTxs = [...cycleData.txs].sort((a: Transaction, b: Transaction) => {
@@ -1162,9 +1165,8 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                       <p className="text-3xl font-black tabular-nums tracking-tighter text-slate-900 dark:text-white">
                         {groupedCycleOptions[activeMonthSummary]
                           .reduce(
-                            (acc: any, c: any) =>
-                              acc +
-                              (roadmap.find((r: any) => r.key === c.key)?.headers?.MARGIN || 0),
+                            (acc, c) =>
+                              acc + (roadmap.find((r) => r.key === c.key)?.headers?.MARGIN || 0),
                             0,
                           )
                           .toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -1193,11 +1195,11 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                         ₱
                         {groupedCycleOptions[activeMonthSummary]
                           .reduce(
-                            (acc: any, c: any) =>
+                            (acc, c) =>
                               acc +
-                              (roadmap.find((r: any) => r.key === c.key)?.headers?.[
+                              ((roadmap.find((r) => r.key === c.key)?.headers?.[
                                 item.val as keyof CycleHeaders
-                              ] || 0),
+                              ] || 0) as number),
                             0,
                           )
                           .toLocaleString(undefined, {
@@ -1217,8 +1219,8 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                   <div className="ml-4 h-[0.5px] flex-1 bg-gradient-to-r from-black/[0.08] to-transparent dark:from-white/10" />
                 </div>
                 <div className="space-y-3">
-                  {groupedCycleOptions[activeMonthSummary].map((c: any) => {
-                    const cycle = roadmap.find((r: any) => r.key === c.key);
+                  {groupedCycleOptions[activeMonthSummary].map((c) => {
+                    const cycle = roadmap.find((r) => r.key === c.key);
                     const headers = cycle?.headers;
                     const surplus = headers?.SURPLUS || 0;
                     return (
