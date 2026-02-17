@@ -93,9 +93,9 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
     formatFn,
   }: {
     label: string;
-    oldVal: any;
-    newVal: any;
-    formatFn?: (v: any) => string;
+    oldVal: unknown;
+    newVal: unknown;
+    formatFn?: (v: unknown) => string;
   }) => {
     // Strict equality check to prevent showing unchanged rows
     if (oldVal === newVal || (oldVal === undefined && newVal === undefined)) return null;
@@ -244,9 +244,9 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
                   onChange={(e) => setTx({ ...tx, cycleKey: e.target.value })}
                   required
                 >
-                  {Object.entries(groupedCycleOptions).map(([m, c]: any) => (
+                  {Object.entries(groupedCycleOptions).map(([m, c]) => (
                     <optgroup key={m} label={m} className="dark:bg-[#1A1A1A]">
-                      {c.map((o: any) => (
+                      {c.map((o) => (
                         <option key={o.key} value={o.key}>
                           {o.display} ({o.dateLabel})
                         </option>
@@ -418,26 +418,26 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
                             label="Category"
                             oldVal={s.typeId}
                             newVal={nextState.typeId}
-                            formatFn={(id) => getFullTypeName(id)}
+                            formatFn={(id) => getFullTypeName(id as string)}
                           />
                           <DiffRow
                             label="Source"
                             oldVal={s.accountId}
                             newVal={nextState.accountId}
-                            formatFn={(id) => getAccountName(id)}
+                            formatFn={(id) => getAccountName(id as string)}
                           />
                           <DiffRow
                             label="Dest"
                             oldVal={s.toAccountId}
                             newVal={nextState.toAccountId}
-                            formatFn={(id) => getAccountName(id)}
+                            formatFn={(id) => getAccountName(id as string)}
                           />
                           <DiffRow label="Cycle" oldVal={s.cycleKey} newVal={nextState.cycleKey} />
                           <DiffRow
                             label="Date"
                             oldVal={s.date}
                             newVal={nextState.date}
-                            formatFn={(v) => (v ? format(parseISO(v), 'MM/dd/yy') : '')}
+                            formatFn={(v) => (v ? format(parseISO(v as string), 'MM/dd/yy') : '')}
                           />
                           <DiffRow
                             label="Status"
