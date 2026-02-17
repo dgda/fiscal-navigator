@@ -14,17 +14,18 @@ interface LiquidityGapProps {
   isProjected?: boolean;
 }
 
-const LiquidityGapIndicator: React.FC<LiquidityGapProps> = ({
-  label,
-  isForecasting,
-  currentLiquidity,
-  currentLiquidityLabel,
-  comparisonValue,
-  comparisonLabel,
-  marginValue,
-  marginLabel,
-  isProjected = false,
-}) => {
+const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
+  const {
+    label,
+    isForecasting,
+    currentLiquidity,
+    currentLiquidityLabel,
+    comparisonValue,
+    comparisonLabel,
+    marginValue,
+    marginLabel,
+    isProjected = false,
+  } = props;
   const Icon: LucideIcon = isForecasting ? AlertTriangle : ShieldCheck;
 
   // Dynamic classes based on state and projection mode
