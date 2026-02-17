@@ -6,15 +6,12 @@ import { Sidebar } from './components/layout/Sidebar';
 import { RoadmapSpreadsheet } from './components/roadmap/RoadmapSpreadsheet';
 import { TransactionEditModal } from './components/roadmap/TransactionEditModal';
 import { SettingsPanel } from './components/panels/SettingsPanel'; // Re-integrated Import
+import { FilterMode, UseRoadmapProps } from './hooks/useRoadmap';
 
 const App: React.FC = () => {
   // 1. TEMPORAL SCOPE STATE
-  const [filter, setFilter] = useState<{
-    mode: 'all' | 'year' | 'month';
-    year: number;
-    month: number;
-  }>({
-    mode: 'all',
+  const [filter, setFilter] = useState<UseRoadmapProps>({
+    mode: FilterMode.ALL,
     year: new Date().getFullYear(),
     month: new Date().getMonth(),
   });

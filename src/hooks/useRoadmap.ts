@@ -10,8 +10,35 @@ import {
 } from 'date-fns';
 import { useTreasury } from '../context/TreasuryContext';
 import { TOTAL_CYCLES, DEFAULT_ANCHOR_DATE, DEFAULT_FIXED_INTERVAL } from '../constants';
+import {
+  CycleHeaders,
+  GroupedRoadmapTransactions,
+  LabeledRoadmapTransaction,
+  RoadmapCycle,
+  RoadmapData,
+  RoadmapTransaction,
+} from '../types/roadmap';
 
-export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: number) => {
+export interface IUseRoadmap {
+  roadmap: RoadmapCycle[];
+  bufferDays: number;
+  groupedCycleOptions: GroupedRoadmapTransactions;
+  masterCycles: RoadmapTransaction[];
+}
+export enum FilterMode {
+  ALL = 'all',
+  YEAR = 'year',
+  MONTH = 'month',
+}
+
+export interface UseRoadmapProps {
+  mode: FilterMode;
+  year: number;
+  month: number;
+}
+
+export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
+  const { mode, year, month } = props;
   const { data, totalLiquidity } = useTreasury();
   const payoutConfig = data?.payoutConfig || {
     archetype: 'bi-weekly',
@@ -21,19 +48,20 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
     monthlyDay: 1,
   };
 
-  const masterCycles = useMemo(() => {
-    const options = [];
+  const masterCycles: RoadmapTransaction[] = useMemo(() => {
+    const roadmapTransactions: RoadmapTransaction[] = [];
     const { archetype, anchorDate, fixedIntervalDays, semiMonthlyDays, monthlyDay } = payoutConfig;
 
     if (archetype === 'bi-weekly') {
       let curr = parseISO(anchorDate || DEFAULT_ANCHOR_DATE);
       for (let i = 0; i < TOTAL_CYCLES; i++) {
         const absoluteSequence = i % 2 === 0 ? 'A' : 'B';
-        options.push({
+        const roadmapTransaction: RoadmapTransaction = {
           date: format(curr, 'yyyy-MM-dd'),
           key: `${format(curr, 'yyyy-MM-dd')}-${absoluteSequence}`,
           absoluteSequence,
-        });
+        };
+        roadmapTransactions.push(roadmapTransaction);
         curr = addDays(curr, fixedIntervalDays || DEFAULT_FIXED_INTERVAL);
       }
     } else if (archetype === 'semi-monthly') {
@@ -43,11 +71,12 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
         (semiMonthlyDays || [15, 30]).forEach((day, idx) => {
           const date = setDate(currMonth, day);
           const sequence = idx === 0 ? 'A' : 'B';
-          options.push({
+          const roadmapTransaction: RoadmapTransaction = {
             date: format(date, 'yyyy-MM-dd'),
             key: `${format(date, 'yyyy-MM-dd')}-${sequence}`,
             absoluteSequence: sequence,
-          });
+          };
+          roadmapTransactions.push(roadmapTransaction);
         });
       }
     } else if (archetype === 'monthly') {
@@ -55,27 +84,27 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
       for (let i = 0; i < 12; i++) {
         const currMonth = addMonths(startMonth, i);
         const date = setDate(currMonth, monthlyDay || 1);
-        options.push({
+        const roadmapTransaction: RoadmapTransaction = {
           date: format(date, 'yyyy-MM-dd'),
           key: `${format(date, 'yyyy-MM-dd')}-A`,
           absoluteSequence: 'A',
-        });
+        };
+        roadmapTransactions.push(roadmapTransaction);
       }
     }
 
-    return options;
+    return roadmapTransactions;
   }, [payoutConfig]);
 
-  const groupedCycleOptions = useMemo(() => {
+  const groupedCycleOptions: GroupedRoadmapTransactions = useMemo(() => {
     const filtered = masterCycles.filter((c) => {
       const d = parseISO(c.date);
-      if (filterMode === 'all') return true;
-      if (filterMode === 'year') return d.getFullYear() === filterYear;
-      if (filterMode === 'month')
-        return d.getFullYear() === filterYear && d.getMonth() === filterMonth;
+      if (mode === 'all') return true;
+      if (mode === 'year') return d.getFullYear() === year;
+      if (mode === 'month') return d.getFullYear() === year && d.getMonth() === month;
       return true;
     });
-    const groups: Record<string, any[]> = {};
+    const groups: GroupedRoadmapTransactions = {};
 
     filtered.forEach((c) => {
       const dateObj = parseISO(c.date);
@@ -83,17 +112,18 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
       if (!groups[monthLabel]) groups[monthLabel] = [];
       const cycleIndexInMonth = groups[monthLabel].length;
       const relativeLabel = String.fromCharCode(65 + cycleIndexInMonth);
-      groups[monthLabel].push({
+      const labeledRoadmapTransaction: LabeledRoadmapTransaction = {
         ...c,
         display: `Cycle ${relativeLabel}`,
         dateLabel: format(dateObj, 'MM/dd'),
-      });
+      };
+      groups[monthLabel].push(labeledRoadmapTransaction);
     });
 
     return groups;
-  }, [filterMode, filterYear, filterMonth, masterCycles]);
+  }, [mode, year, month, masterCycles]);
 
-  const roadmapData = useMemo(() => {
+  const roadmapData: RoadmapData = useMemo(() => {
     const isOfRoot = (typeId: string, rootName: string): boolean => {
       const t = data.types.find((x) => x.id === typeId);
       if (!t) return false;
@@ -118,7 +148,7 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
     let cumEstimatedExpenses = 0;
 
     // Generate the roadmap array with cycle-specific Reality Checks
-    const roadmap = flatOptions.map((opt, index) => {
+    const roadmap: RoadmapCycle[] = flatOptions.map((opt, index) => {
       const cycleTxs = data.transactions.filter((t) => t.cycleKey === opt.key);
       const incTxs = cycleTxs.filter((t) => isOfRoot(t.typeId, 'Income'));
       const expTxs = cycleTxs.filter((t) => isOfRoot(t.typeId, 'Expense'));
@@ -157,25 +187,27 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
       const isProjectedForecasting = projectedCheck < 0;
       const projectedLiquidityRunway = cumEstSaved / burnRateSoFar;
 
+      const cycleHeaders: CycleHeaders = {
+        INFLOW: projectedIncome,
+        PLANNED: estimatedExpenses,
+        CLEARED: actualExpenses,
+        MARGIN: netFlowProjected,
+        SURPLUS: netFlowActual,
+        NET_ACTUAL: cumActualSaved,
+        NET_PROJECTED: cumEstSaved,
+        REALITY_CHECK: realityCheck,
+        IS_FORECASTING: isForecasting,
+        CYCLE_BURN_RATE: burnRateSoFar,
+        LIQUIDITY_RUNWAY: liquidityRunway,
+        PROJECTED_LIQUIDITY_RUNWAY: projectedLiquidityRunway,
+        PROJECTED_CHECK: projectedCheck,
+        IS_PROJECTED_FORECASTING: isProjectedForecasting,
+      };
+
       return {
         ...opt,
         txs: cycleTxs,
-        headers: {
-          INFLOW: projectedIncome,
-          PLANNED: estimatedExpenses,
-          CLEARED: actualExpenses,
-          MARGIN: netFlowProjected,
-          SURPLUS: netFlowActual,
-          'NET ACTUAL': cumActualSaved,
-          'NET PROJECTED': cumEstSaved,
-          REALITY_CHECK: realityCheck,
-          IS_FORECASTING: isForecasting,
-          CYCLE_BURN_RATE: burnRateSoFar,
-          LIQUIDITY_RUNWAY: liquidityRunway,
-          PROJECTED_LIQUIDITY_RUNWAY: projectedLiquidityRunway,
-          PROJECTED_CHECK: projectedCheck,
-          IS_PROJECTED_FORECASTING: isProjectedForecasting,
-        },
+        headers: cycleHeaders,
       };
     });
 

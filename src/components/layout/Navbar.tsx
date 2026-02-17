@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTreasury } from '../../context/TreasuryContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useRoadmap } from '../../hooks/useRoadmap'; // Import the hook
+import { FilterMode, useRoadmap } from '../../hooks/useRoadmap'; // Import the hook
 import {
   Landmark,
   Coins,
@@ -25,7 +25,11 @@ export const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => 
   const { theme, toggleTheme, isSystemDefault, setUseSystemDefault } = useTheme();
 
   // Fetch global bufferDays (using 'all' mode for global runway)
-  const { bufferDays } = useRoadmap('all', new Date().getFullYear(), new Date().getMonth());
+  const { bufferDays } = useRoadmap({
+    mode: FilterMode.ALL,
+    year: new Date().getFullYear(),
+    month: new Date().getMonth(),
+  });
 
   return (
     <nav className="relative z-30 flex h-14 w-full shrink-0 items-center justify-between border-b border-black/5 bg-[#FBFBFD]/80 px-4 backdrop-blur-2xl transition-colors dark:border-white/5 dark:bg-[#141416]/80">

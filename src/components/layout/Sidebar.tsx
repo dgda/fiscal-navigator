@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTreasury } from '../../context/TreasuryContext';
-import { useRoadmap } from '../../hooks/useRoadmap';
+import { FilterMode, useRoadmap } from '../../hooks/useRoadmap';
 import {
   parseISO,
   isAfter,
@@ -27,10 +27,11 @@ import {
   Hash,
   Tag,
 } from 'lucide-react';
+import { Transaction } from '../../types';
 
 interface SidebarProps {
-  filterMode: 'all' | 'year' | 'month';
-  setFilterMode: (mode: 'all' | 'year' | 'month') => void;
+  filterMode: FilterMode;
+  setFilterMode: (mode: FilterMode) => void;
   filterYear: number;
   setFilterYear: (year: number) => void;
   filterMonth: number;
@@ -44,11 +45,11 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = (props) => {
   const { data, sync, checkIsTransfer, computedAccounts, renderTypeOptions } = useTreasury();
-  const { groupedCycleOptions, masterCycles } = useRoadmap(
-    props.filterMode,
-    props.filterYear,
-    props.filterMonth,
-  );
+  const { groupedCycleOptions, masterCycles } = useRoadmap({
+    mode: props.filterMode,
+    year: props.filterYear,
+    month: props.filterMonth,
+  });
   const [selectedTypeId, setSelectedTypeId] = useState('');
   const [isPlanned, setIsPlanned] = useState(false);
   const [isPaid, setIsPaid] = useState(true);
@@ -81,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
       const primaryId = crypto.randomUUID();
       const recurringGroupId = isRecurring ? crypto.randomUUID() : undefined;
 
-      const primaryTx: any = {
+      const primaryTx: Transaction = {
         id: primaryId,
         name: f.get('name') as string,
         amount: Number(f.get('amount')),
@@ -107,7 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
           id: crypto.randomUUID(),
           name: `Fee: ${primaryTx.name}`,
           amount: feeAmount,
-          typeId: data.types.find((t: any) => t.name === 'Expense')?.id || selectedTypeId,
+          typeId: data.types.find((t) => t.name === 'Expense')?.id || selectedTypeId,
           history: [{ snapshot: {}, timestamp: now, label: `Linked Fee` }],
         });
       }
@@ -138,7 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
           // Finds the latest cycle such that cycleDate <= occurrenceDate
           const targetCycle = masterCycles
             .filter(
-              (c: any) =>
+              (c) =>
                 isBefore(parseISO(c.date), occurrenceDate) ||
                 c.date === format(occurrenceDate, 'yyyy-MM-dd'),
             )
@@ -205,7 +206,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
               </div>
 
               <div className="flex rounded-[10px] bg-slate-200/50 p-1 dark:bg-white/5">
-                {(['all', 'year', 'month'] as const).map((m) => (
+                {Object.values(FilterMode).map((m) => (
                   <button
                     key={m}
                     onClick={() => props.setFilterMode(m)}
@@ -339,9 +340,9 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                       className={`${inputBaseClass} appearance-none`}
                       required
                     >
-                      {Object.entries(groupedCycleOptions).map(([m, c]: any) => (
+                      {Object.entries(groupedCycleOptions).map(([m, c]) => (
                         <optgroup key={m} label={m} className="dark:bg-[#1A1A1A]">
-                          {c.map((o: any) => (
+                          {c.map((o) => (
                             <option key={o.key} value={o.key}>
                               {o.display} ({o.dateLabel})
                             </option>
@@ -380,7 +381,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                       required
                     >
                       <option value="">Source Account</option>
-                      {computedAccounts.map((a: any) => (
+                      {computedAccounts.map((a) => (
                         <option key={a.id} value={a.id}>
                           {a.name}
                         </option>
@@ -405,7 +406,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                           required
                         >
                           <option value="">Destination Account</option>
-                          {computedAccounts.map((a: any) => (
+                          {computedAccounts.map((a) => (
                             <option key={a.id} value={a.id}>
                               {a.name}
                             </option>

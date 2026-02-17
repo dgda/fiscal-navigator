@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTreasury } from '../../context/TreasuryContext';
-import { useRoadmap } from '../../hooks/useRoadmap'; // Assuming the hook is in this path
+import { FilterMode, useRoadmap } from '../../hooks/useRoadmap'; // Assuming the hook is in this path
 import { Transaction } from '../../types';
 import {
   X,
@@ -38,11 +38,11 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
   } = useTreasury();
 
   // Load master cycles to populate the cycle selector
-  const { masterCycles, groupedCycleOptions } = useRoadmap(
-    'all',
-    new Date().getFullYear(),
-    new Date().getMonth(),
-  );
+  const { groupedCycleOptions } = useRoadmap({
+    mode: FilterMode.ALL,
+    year: new Date().getFullYear(),
+    month: new Date().getMonth(),
+  });
 
   const [tx, setTx] = useState<Transaction | null>(null);
   const [editMode, setEditMode] = useState<'single' | 'series'>('single');

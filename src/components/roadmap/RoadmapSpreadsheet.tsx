@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useTreasury } from '../../context/TreasuryContext';
-import { useRoadmap } from '../../hooks/useRoadmap';
+import { UseRoadmapProps, useRoadmap } from '../../hooks/useRoadmap';
 import {
   CheckCircle2,
   Circle,
@@ -43,9 +43,10 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { CycleHeaders } from '../../types/roadmap';
 
-interface RoadmapProps {
-  filter: { mode: 'all' | 'year' | 'month'; year: number; month: number };
+interface RoadmapSpreadsheetProps {
+  filter: UseRoadmapProps;
   onEdit: (id: string) => void;
   highlightId: string | null;
   onHighlightComplete: () => void;
@@ -245,7 +246,7 @@ const CycleMetricPill = ({
   </div>
 );
 
-export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
+export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
   filter,
   onEdit,
   highlightId,
@@ -261,7 +262,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
     checkIsTransfer,
     computedAccounts,
   } = useTreasury() as any;
-  const { roadmap, groupedCycleOptions } = useRoadmap(filter.mode, filter.year, filter.month);
+  const { roadmap, groupedCycleOptions } = useRoadmap(filter);
   const [activeMonthSummary, setActiveMonthSummary] = useState<string | null>(null);
   const [isOpening, setIsOpening] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -397,8 +398,8 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                   CLEARED,
                   MARGIN,
                   SURPLUS,
-                  'NET ACTUAL': netActual,
-                  'NET PROJECTED': netProjected,
+                  NET_ACTUAL,
+                  NET_PROJECTED,
                   IS_FORECASTING,
                   REALITY_CHECK,
                   LIQUIDITY_RUNWAY,
@@ -407,8 +408,8 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                   IS_PROJECTED_FORECASTING,
                 } = cycleData.headers;
                 const unpaidInCycle = PLANNED - CLEARED;
-                const prevActual = Number(netActual) - SURPLUS;
-                const prevProjected = Number(netProjected) - MARGIN;
+                const prevActual = NET_ACTUAL - SURPLUS;
+                const prevProjected = NET_PROJECTED - MARGIN;
                 const firstAccruedId = processedTxs.find((t: Transaction) => t.isPlanned)?.id;
                 const firstOperatingId = processedTxs.find((t: Transaction) => !t.isPlanned)?.id;
                 const showAccruedSeparator = processedTxs.some((t: Transaction) => t.isPlanned);
@@ -561,12 +562,12 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                             <ShieldCheck size={10} strokeWidth={2.5} /> Net Actual
                           </span>
                           <span
-                            className={`font-mono text-[16px] font-black tracking-tight ${Number(netActual) < 0 ? 'text-red-500' : 'text-blue-700 dark:text-blue-300'}`}
+                            className={`font-mono text-[16px] font-black tracking-tight ${NET_ACTUAL < 0 ? 'text-red-500' : 'text-blue-700 dark:text-blue-300'}`}
                           >
                             <span className="mr-0.5 font-sans text-[12px] font-medium opacity-40">
                               ₱
                             </span>
-                            {Number(netActual).toLocaleString(undefined, {
+                            {NET_ACTUAL.toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}
@@ -608,12 +609,12 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                             <BarChart3 size={10} strokeWidth={2.5} /> Net Projected
                           </span>
                           <span
-                            className={`font-mono text-[16px] font-black tracking-tight ${Number(netProjected) < 0 ? 'text-red-500' : 'text-teal-700 dark:text-teal-300'}`}
+                            className={`font-mono text-[16px] font-black tracking-tight ${NET_PROJECTED < 0 ? 'text-red-500' : 'text-teal-700 dark:text-teal-300'}`}
                           >
                             <span className="mr-0.5 font-sans text-[12px] font-medium opacity-40">
                               ₱
                             </span>
-                            {Number(netProjected).toLocaleString(undefined, {
+                            {NET_PROJECTED.toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}
@@ -640,7 +641,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                                   </span>
                                   <span className="font-mono text-[9px] font-bold text-blue-700 dark:text-blue-500">
                                     ₱
-                                    {Number(netActual).toLocaleString(undefined, {
+                                    {NET_ACTUAL.toLocaleString(undefined, {
                                       minimumFractionDigits: 2,
                                       maximumFractionDigits: 2,
                                     })}
@@ -1194,7 +1195,9 @@ export const RoadmapSpreadsheet: React.FC<RoadmapProps> = ({
                           .reduce(
                             (acc: any, c: any) =>
                               acc +
-                              (roadmap.find((r: any) => r.key === c.key)?.headers?.[item.val] || 0),
+                              (roadmap.find((r: any) => r.key === c.key)?.headers?.[
+                                item.val as keyof CycleHeaders
+                              ] || 0),
                             0,
                           )
                           .toLocaleString(undefined, {
