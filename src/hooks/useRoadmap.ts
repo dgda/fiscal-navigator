@@ -186,6 +186,8 @@ export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
       const projectedCheck = prevProjected - estimatedExpenses;
       const isProjectedForecasting = projectedCheck < 0;
       const projectedLiquidityRunway = cumEstSaved / burnRateSoFar;
+      const unpaidInCycle = estimatedExpenses - actualExpenses;
+      const prevActual = cumActualSaved - netFlowActual;
 
       const cycleHeaders: CycleHeaders = {
         INFLOW: projectedIncome,
@@ -202,6 +204,9 @@ export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
         PROJECTED_LIQUIDITY_RUNWAY: projectedLiquidityRunway,
         PROJECTED_CHECK: projectedCheck,
         IS_PROJECTED_FORECASTING: isProjectedForecasting,
+        UNPAID_IN_CYCLE: unpaidInCycle,
+        PREV_ACTUAL: prevActual,
+        PREV_PROJECTED: prevProjected,
       };
 
       return {

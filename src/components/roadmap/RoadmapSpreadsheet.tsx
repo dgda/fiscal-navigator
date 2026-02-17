@@ -372,10 +372,10 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                   PROJECTED_LIQUIDITY_RUNWAY,
                   PROJECTED_CHECK,
                   IS_PROJECTED_FORECASTING,
+                  UNPAID_IN_CYCLE,
+                  PREV_ACTUAL,
+                  PREV_PROJECTED,
                 } = cycleData.headers;
-                const unpaidInCycle = PLANNED - CLEARED;
-                const prevActual = NET_ACTUAL - SURPLUS;
-                const prevProjected = NET_PROJECTED - MARGIN;
                 const firstAccruedId = processedTxs.find((t: Transaction) => t.isPlanned)?.id;
                 const firstOperatingId = processedTxs.find((t: Transaction) => !t.isPlanned)?.id;
                 const showAccruedSeparator = processedTxs.some((t: Transaction) => t.isPlanned);
@@ -396,9 +396,9 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
 
                       <BalanceCards
                         NET_ACTUAL={NET_ACTUAL}
-                        prevActual={prevActual}
+                        prevActual={PREV_ACTUAL}
                         NET_PROJECTED={NET_PROJECTED}
-                        prevProjected={prevProjected}
+                        prevProjected={PREV_PROJECTED}
                         SURPLUS={SURPLUS}
                         MARGIN={MARGIN}
                       />
@@ -409,7 +409,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                         isForecasting={IS_FORECASTING}
                         currentLiquidity={NET_ACTUAL}
                         currentLiquidityLabel="Current Liquidity"
-                        comparisonValue={unpaidInCycle}
+                        comparisonValue={UNPAID_IN_CYCLE}
                         comparisonLabel="Unpaid Planned Bills"
                         marginValue={REALITY_CHECK}
                         marginLabel="Survival Margin"
@@ -420,7 +420,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                         isProjected
                         label="Projected Liquidity"
                         isForecasting={IS_PROJECTED_FORECASTING}
-                        currentLiquidity={Number(prevProjected)}
+                        currentLiquidity={PREV_PROJECTED}
                         currentLiquidityLabel="Projected Current Liquidity"
                         comparisonValue={PLANNED}
                         comparisonLabel="Planned Bills"

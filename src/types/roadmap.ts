@@ -23,6 +23,9 @@ export interface CycleHeaders {
   PROJECTED_LIQUIDITY_RUNWAY: number;
   PROJECTED_CHECK: number;
   IS_PROJECTED_FORECASTING: boolean;
+  UNPAID_IN_CYCLE: number;
+  PREV_ACTUAL: number;
+  PREV_PROJECTED: number;
 }
 
 /**
