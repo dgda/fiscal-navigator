@@ -1,5 +1,4 @@
 import React from 'react';
-import { UseRoadmapProps } from '../../../../hooks/useRoadmap';
 import { CycleMetricPill } from './CycleMetricPill';
 import { ArrowUpRight, ArrowDownRight, Wallet, Target, PieChart } from 'lucide-react';
 import { CycleHeaders } from '../../../../types/roadmap';
