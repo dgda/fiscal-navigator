@@ -15,7 +15,7 @@ import {
   Check,
   X,
 } from 'lucide-react';
-import { TransactionType, PayoutArchetype, Account } from '../../types';
+import { TransactionType, PayoutArchetype, Account, TreasuryData } from '../../types';
 
 export const SettingsPanel: React.FC = () => {
   const { data, sync, computedAccounts, renderTypeOptions, updatePayoutConfig, loading } =
@@ -45,7 +45,7 @@ export const SettingsPanel: React.FC = () => {
     );
   }
 
-  const handleUpdate = (next: any) => sync(next);
+  const handleUpdate = (next: TreasuryData) => sync(next);
 
   const executeDelete = () => {
     if (!deleteCandidate) return;
@@ -73,10 +73,10 @@ export const SettingsPanel: React.FC = () => {
     });
   };
 
-  const saveEdit = (id: string, updates: any, type: 'accounts' | 'types') => {
-    const nextData = {
+  const saveEdit = (id: string, updates: { name: string }, type: 'accounts' | 'types') => {
+    const nextData: TreasuryData = {
       ...data,
-      [type]: data[type].map((item: any) => (item.id === id ? { ...item, ...updates } : item)),
+      [type]: data[type].map((item) => (item.id === id ? { ...item, ...updates } : item)),
     };
     handleUpdate(nextData);
     setEditingId(null);
@@ -322,7 +322,7 @@ export const SettingsPanel: React.FC = () => {
 
               <div className="p-6">
                 <form
-                  onSubmit={(e: any) => {
+                  onSubmit={(e: React.SubmitEvent<HTMLFormElement>) => {
                     e.preventDefault();
                     const f = new FormData(e.currentTarget);
                     handleUpdate({
@@ -483,7 +483,7 @@ export const SettingsPanel: React.FC = () => {
               <div className="flex flex-col overflow-hidden p-6">
                 {/* RESTORED ADD CATEGORY FORM */}
                 <form
-                  onSubmit={(e: any) => {
+                  onSubmit={(e: React.SubmitEvent<HTMLFormElement>) => {
                     e.preventDefault();
                     const f = new FormData(e.currentTarget);
                     handleUpdate({
