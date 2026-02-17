@@ -47,6 +47,7 @@ import { CycleHeaders } from '../../types/roadmap';
 import { CycleMetricPill } from './CycleHeaders/CycleMetricPills/CycleMetricPill';
 import { CycleMetricPills } from './CycleHeaders/CycleMetricPills/CycleMetricPills';
 import LiquidityGapIndicator from './CycleHeaders/LiquidityGap/LiquidityGap';
+import BalanceCard from './CycleHeaders/BalanceCard/BalanceCard';
 
 interface RoadmapSpreadsheetProps {
   filter: UseRoadmapProps;
@@ -488,102 +489,25 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                       </div>
 
                       <div className="mb-2.5 grid grid-cols-2 gap-2">
-                        {/* NET ACTUAL CARD */}
-                        <div className="group relative flex flex-col justify-center rounded-[18px] border border-blue-100 bg-blue-50/50 px-3.5 py-3 shadow-sm transition-all hover:bg-blue-50/80 dark:border-blue-500/10 dark:bg-blue-500/5 dark:hover:bg-blue-500/10">
-                          <div className="pointer-events-none absolute -top-1 left-1/2 z-[1000] w-max -translate-x-1/2 -translate-y-full scale-95 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
-                            <div className="rounded-2xl border border-black/5 bg-white p-3 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#1C1C1E]">
-                              <div className="mb-1.5 border-b border-black/5 pb-1 text-[8px] font-black uppercase tracking-widest text-blue-500 dark:border-white/5">
-                                Net Actual Math
-                              </div>
-                              <div className="flex min-w-[140px] flex-col gap-1.5">
-                                <div className="flex items-center justify-between gap-4">
-                                  <span className="text-[9px] text-slate-500">Opening Balance</span>
-                                  <span className="font-mono text-[9px] font-bold text-slate-900 dark:text-white">
-                                    ₱
-                                    {prevActual.toLocaleString(undefined, {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between gap-4">
-                                  <span className="text-[9px] text-slate-500">Cycle Net Flow</span>
-                                  <span
-                                    className={`font-mono text-[9px] font-bold ${SURPLUS >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
-                                  >
-                                    {SURPLUS >= 0 ? '+' : ''}₱
-                                    {SURPLUS.toLocaleString(undefined, {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="mx-auto h-2 w-2 -translate-y-1 rotate-45 border-b border-r border-black/5 bg-white/90 dark:border-white/10 dark:bg-[#1C1C1E]/90" />
-                          </div>
-                          <span className="mb-0.5 flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest text-blue-600/70 dark:text-blue-400/70">
-                            <ShieldCheck size={10} strokeWidth={2.5} /> Net Actual
-                          </span>
-                          <span
-                            className={`font-mono text-[16px] font-black tracking-tight ${NET_ACTUAL < 0 ? 'text-red-500' : 'text-blue-700 dark:text-blue-300'}`}
-                          >
-                            <span className="mr-0.5 font-sans text-[12px] font-medium opacity-40">
-                              ₱
-                            </span>
-                            {NET_ACTUAL.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </span>
-                        </div>
+                        <BalanceCard
+                          variant="blue"
+                          label="Net Actual"
+                          value={NET_ACTUAL}
+                          prevValue={prevActual}
+                          prevLabel="Opening Balance"
+                          flowValue={SURPLUS}
+                          flowLabel="Cycle Net Flow"
+                        />
 
-                        {/* NET PROJECTED CARD */}
-                        <div className="group relative flex flex-col justify-center rounded-[18px] border border-teal-100 bg-teal-50/50 px-3.5 py-3 shadow-sm transition-all hover:bg-teal-50/80 dark:border-teal-500/10 dark:bg-teal-500/5 dark:hover:bg-teal-500/10">
-                          <div className="pointer-events-none absolute -top-1 left-1/2 z-[1000] w-max -translate-x-1/2 -translate-y-full scale-95 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
-                            <div className="rounded-2xl border border-black/5 bg-white p-3 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#1C1C1E]">
-                              <div className="mb-1.5 border-b border-black/5 pb-1 text-[8px] font-black uppercase tracking-widest text-teal-500 dark:border-white/5">
-                                Net Projected Math
-                              </div>
-                              <div className="flex min-w-[140px] flex-col gap-1.5">
-                                <div className="flex items-center justify-between gap-4">
-                                  <span className="text-[9px] text-slate-500">Opening Target</span>
-                                  <span className="font-mono text-[9px] font-bold text-slate-900 dark:text-white">
-                                    ₱
-                                    {prevProjected.toLocaleString(undefined, {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between gap-4">
-                                  <span className="text-[9px] text-slate-500">Planned Margin</span>
-                                  <span
-                                    className={`font-mono text-[9px] font-bold ${MARGIN >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
-                                  >
-                                    {MARGIN >= 0 ? '+' : ''}₱
-                                    {MARGIN.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="mx-auto h-2 w-2 -translate-y-1 rotate-45 border-b border-r border-black/5 bg-white/90 dark:border-white/10 dark:bg-[#1C1C1E]/90" />
-                          </div>
-                          <span className="mb-0.5 flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-widest text-teal-600/70 dark:text-teal-400/70">
-                            <BarChart3 size={10} strokeWidth={2.5} /> Net Projected
-                          </span>
-                          <span
-                            className={`font-mono text-[16px] font-black tracking-tight ${NET_PROJECTED < 0 ? 'text-red-500' : 'text-teal-700 dark:text-teal-300'}`}
-                          >
-                            <span className="mr-0.5 font-sans text-[12px] font-medium opacity-40">
-                              ₱
-                            </span>
-                            {NET_PROJECTED.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </span>
-                        </div>
+                        <BalanceCard
+                          variant="teal"
+                          label="Net Projected"
+                          value={NET_PROJECTED}
+                          prevValue={prevProjected}
+                          prevLabel="Opening Target"
+                          flowValue={MARGIN}
+                          flowLabel="Planned Margin"
+                        />
                       </div>
 
                       {/* ACTUAL STATUS */}
