@@ -44,6 +44,8 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { CycleHeaders } from '../../types/roadmap';
+import { CycleMetricPill } from './CycleHeaders/CycleMetricPills/CycleMetricPill';
+import { CycleMetricPills } from './CycleHeaders/CycleMetricPills/CycleMetricPills';
 
 interface RoadmapSpreadsheetProps {
   filter: UseRoadmapProps;
@@ -206,48 +208,6 @@ const SortableTransactionRow = (props: SortableTransactionRowProps) => {
     </div>
   );
 };
-
-const CycleMetricPill = ({
-  label,
-  value,
-  icon: Icon,
-  colorClass,
-  valueColorClass,
-  tooltipContent,
-}: {
-  label: string;
-  value: number;
-  icon: any;
-  colorClass: string;
-  valueColorClass: string;
-  tooltipContent?: React.ReactNode;
-}) => (
-  <div
-    className={`group relative flex min-w-0 flex-1 flex-col justify-center rounded-xl border px-2 py-1.5 ${colorClass} transition-all duration-300`}
-  >
-    {tooltipContent && (
-      <div className="pointer-events-none absolute -top-2 left-1/2 z-[1000] w-max -translate-x-1/2 -translate-y-full scale-95 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
-        <div className="rounded-2xl border border-black/5 bg-white/90 p-2.5 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#1C1C1E]/90">
-          <div className="mb-1.5 border-b border-black/5 pb-1 text-[8px] font-black uppercase tracking-widest text-slate-400 dark:border-white/5">
-            {label} Breakdown
-          </div>
-          <div className="flex min-w-[120px] flex-col gap-1.5">{tooltipContent}</div>
-        </div>
-        <div className="mx-auto h-2 w-2 -translate-y-1 rotate-45 border-b border-r border-black/5 bg-white/90 dark:border-white/10 dark:bg-[#1C1C1E]/90" />
-      </div>
-    )}
-    <div className="flex items-center gap-1 opacity-70">
-      <Icon size={9} className="shrink-0" />
-      <span className="truncate text-[6.5px] font-black uppercase tracking-tight">{label}</span>
-    </div>
-    <span
-      className={`truncate font-mono text-[9.5px] font-black tabular-nums tracking-tighter ${valueColorClass}`}
-    >
-      <span className="mr-px font-sans text-[8px] opacity-50">₱</span>
-      {value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-    </span>
-  </div>
-);
 
 export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
   filter,
@@ -836,92 +796,7 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                           )}
                         </div>
                       </div>
-
-                      {/* PILLS ROW */}
-                      <div className="no-scrollbar flex items-center gap-1.5 overflow-visible pb-1">
-                        <CycleMetricPill
-                          label="Inflow"
-                          value={INFLOW}
-                          icon={ArrowUpRight}
-                          colorClass="bg-emerald-50/50 border-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                          valueColorClass="text-emerald-700 dark:text-emerald-400"
-                          tooltipContent={
-                            <span className="text-[8.5px] font-medium leading-relaxed text-slate-500">
-                              Total projected salary and cash windfalls for this cycle.
-                            </span>
-                          }
-                        />
-                        <CycleMetricPill
-                          label="Cleared"
-                          value={CLEARED}
-                          icon={ArrowDownRight}
-                          colorClass="bg-rose-50/50 border-rose-100 dark:bg-rose-900/10 dark:border-rose-500/10 text-rose-700 dark:text-rose-400"
-                          valueColorClass="text-rose-700 dark:text-rose-400"
-                          tooltipContent={
-                            <span className="text-[8.5px] font-medium leading-relaxed text-slate-500">
-                              Total volume of transactions marked as Paid or Executed.
-                            </span>
-                          }
-                        />
-                        <CycleMetricPill
-                          label="Surplus"
-                          value={SURPLUS}
-                          icon={Wallet}
-                          colorClass="bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-500/10 text-blue-700 dark:text-blue-400"
-                          valueColorClass="text-blue-700 dark:text-blue-400"
-                          tooltipContent={
-                            <div className="flex min-w-[110px] flex-col gap-1.5">
-                              <div className="flex items-center justify-between gap-3">
-                                <span className="text-[9px] text-slate-500">Paid In</span>
-                                <span className="font-mono text-[9px] font-bold text-emerald-600">
-                                  ₱{INFLOW.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between gap-3">
-                                <span className="text-[9px] text-slate-500">Paid Out</span>
-                                <span className="font-mono text-[9px] font-bold text-rose-600">
-                                  ₱{CLEARED.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                </span>
-                              </div>
-                            </div>
-                          }
-                        />
-                        <CycleMetricPill
-                          label="Planned"
-                          value={PLANNED}
-                          icon={Target}
-                          colorClass="bg-slate-50 border-slate-100 dark:bg-white/5 dark:border-white/5 text-slate-500"
-                          valueColorClass="text-slate-600 dark:text-slate-400"
-                          tooltipContent={
-                            <span className="text-[8.5px] font-medium leading-relaxed text-slate-500">
-                              Cumulative target of all operating and accrued expenses.
-                            </span>
-                          }
-                        />
-                        <CycleMetricPill
-                          label="Projected"
-                          value={MARGIN}
-                          icon={PieChart}
-                          colorClass="bg-slate-50 border-slate-100 dark:bg-white/5 dark:border-white/5 text-slate-500"
-                          valueColorClass="text-slate-600 dark:text-slate-400"
-                          tooltipContent={
-                            <div className="flex min-w-[110px] flex-col gap-1.5">
-                              <div className="flex items-center justify-between gap-3">
-                                <span className="text-[9px] text-slate-500">Target In</span>
-                                <span className="font-mono text-[9px] font-bold text-emerald-600">
-                                  ₱{INFLOW.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between gap-3">
-                                <span className="text-[9px] text-slate-500">Target Out</span>
-                                <span className="font-mono text-[9px] font-bold text-rose-600">
-                                  ₱{PLANNED.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                </span>
-                              </div>
-                            </div>
-                          }
-                        />
-                      </div>
+                      <CycleMetricPills cycleHeaders={cycleData.headers} />
                     </div>
 
                     {/* ONLY SCROLLABLE SECTION: Transaction list gets flex-1 and overflow-y-auto */}
