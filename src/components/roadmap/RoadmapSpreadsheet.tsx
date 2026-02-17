@@ -47,7 +47,7 @@ import { CycleHeaders } from '../../types/roadmap';
 import { CycleMetricPill } from './CycleHeaders/CycleMetricPills/CycleMetricPill';
 import { CycleMetricPills } from './CycleHeaders/CycleMetricPills/CycleMetricPills';
 import LiquidityGapIndicator from './CycleHeaders/LiquidityGap/LiquidityGap';
-import BalanceCard from './CycleHeaders/BalanceCard/BalanceCard';
+import { BalanceCards } from './CycleHeaders/BalanceCards/BalanceCards';
 
 interface RoadmapSpreadsheetProps {
   filter: UseRoadmapProps;
@@ -488,27 +488,14 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
                         </div>
                       </div>
 
-                      <div className="mb-2.5 grid grid-cols-2 gap-2">
-                        <BalanceCard
-                          variant="blue"
-                          label="Net Actual"
-                          value={NET_ACTUAL}
-                          prevValue={prevActual}
-                          prevLabel="Opening Balance"
-                          flowValue={SURPLUS}
-                          flowLabel="Cycle Net Flow"
-                        />
-
-                        <BalanceCard
-                          variant="teal"
-                          label="Net Projected"
-                          value={NET_PROJECTED}
-                          prevValue={prevProjected}
-                          prevLabel="Opening Target"
-                          flowValue={MARGIN}
-                          flowLabel="Planned Margin"
-                        />
-                      </div>
+                      <BalanceCards
+                        NET_ACTUAL={NET_ACTUAL}
+                        prevActual={prevActual}
+                        NET_PROJECTED={NET_PROJECTED}
+                        prevProjected={prevProjected}
+                        SURPLUS={SURPLUS}
+                        MARGIN={MARGIN}
+                      />
 
                       {/* ACTUAL STATUS */}
                       <LiquidityGapIndicator
