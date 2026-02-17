@@ -43,6 +43,12 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
+enum RecurrenceUnit {
+  DAYS = 'days',
+  WEEKS = 'weeks',
+  MONTHS = 'months',
+}
+
 export const Sidebar: React.FC<SidebarProps> = (props) => {
   const { data, sync, checkIsTransfer, computedAccounts, renderTypeOptions } = useTreasury();
   const { groupedCycleOptions, masterCycles } = useRoadmap({
@@ -57,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
   const [untilDate, setUntilDate] = useState(format(addMonths(new Date(), 12), 'yyyy-MM-dd'));
 
   // NEW RECURRENCE STATE
-  const [recurrenceUnit, setRecurrenceUnit] = useState<'days' | 'weeks' | 'months'>('months');
+  const [recurrenceUnit, setRecurrenceUnit] = useState<RecurrenceUnit>(RecurrenceUnit.MONTHS);
   const [recurrenceInterval, setRecurrenceInterval] = useState(1);
 
   useEffect(() => {
@@ -168,7 +174,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
       setIsPaid(true);
       setIsRecurring(false);
       setRecurrenceInterval(1);
-      setRecurrenceUnit('months');
+      setRecurrenceUnit(RecurrenceUnit.MONTHS);
     } catch (err) {
       console.error('Commit Failed', err);
     }
@@ -497,7 +503,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                           />
                           <select
                             value={recurrenceUnit}
-                            onChange={(e) => setRecurrenceUnit(e.target.value as any)}
+                            onChange={(e) => setRecurrenceUnit(e.target.value as RecurrenceUnit)}
                             className="bg-transparent text-[11px] font-bold text-purple-700 outline-none dark:text-purple-300"
                           >
                             <option value="days">Days</option>
