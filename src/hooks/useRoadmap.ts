@@ -142,7 +142,11 @@ export const useRoadmap = (filterMode: string, filterYear: number, filterMonth: 
 
       const averageCumEstimatedExpensesSoFar = cumEstimatedExpenses / (index + 1);
       const averageCumActualSavedSoFar = cumActualSaved / (index + 1);
-      const burnRateSoFar = averageCumEstimatedExpensesSoFar - averageCumActualSavedSoFar;
+      // Net burn rate
+      // const burnRateSoFar = averageCumEstimatedExpensesSoFar - averageCumActualSavedSoFar;
+
+      // Gross burn rate
+      const burnRateSoFar = averageCumEstimatedExpensesSoFar;
       const liquidityRunway = cumActualSaved / burnRateSoFar;
       const remainingPlannedInThisCycle = estimatedExpenses - actualExpenses;
       const realityCheck = cumActualSaved - remainingPlannedInThisCycle;
