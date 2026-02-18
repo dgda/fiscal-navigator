@@ -1,4 +1,4 @@
-import React, { JSX, useEffect, useMemo, useState } from 'react';
+import React, { JSX, useEffect, useMemo, useRef, useState } from 'react';
 import { useTreasury } from '../../../../../context/TreasuryContext';
 import {
   addDays,
@@ -59,6 +59,8 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
     year: filterYear,
     month: filterMonth,
   });
+
+  const transactionNameInputRef = useRef<HTMLInputElement>(null);
 
   const [selectedTypeId, setSelectedTypeId] = useState('');
   const [isPlanned, setIsPlanned] = useState(false);
@@ -179,6 +181,7 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
       setIsRecurring(false);
       setRecurrenceInterval(1);
       setRecurrenceUnit(RecurrenceUnit.MONTHS);
+      transactionNameInputRef?.current?.focus();
     } catch (err) {
       console.error('Commit Failed', err);
     }
@@ -201,6 +204,7 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
             <Tag size={12} />
           </div>
           <input
+            ref={transactionNameInputRef}
             name="name"
             placeholder="Transaction Name"
             className={`${inputBaseClass} pl-8`}
