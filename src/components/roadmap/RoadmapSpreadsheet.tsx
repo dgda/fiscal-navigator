@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useTreasury } from '../../context/TreasuryContext';
 import { UseRoadmapProps, useRoadmap } from '../../hooks/useRoadmap';
-import { CalendarDays, Activity, X, Compass, BarChart3, AlertTriangle } from 'lucide-react';
-import { format, isBefore, parseISO, startOfDay, subDays } from 'date-fns';
+import { CalendarDays, Activity, Compass } from 'lucide-react';
+import { format, isBefore, parseISO, startOfDay } from 'date-fns';
 import { Transaction } from '../../types';
-import { CycleHeaders, CycleStatus } from '../../types/roadmap';
+import { CycleStatus } from '../../types/roadmap';
 import CycleHeader from './CycleHeader/CycleHeader';
 import TransactionList from './TransactionList/TransactionList';
 import DeleteModal from './DeleteModal/DeleteModal';

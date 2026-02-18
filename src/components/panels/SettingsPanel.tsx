@@ -3,7 +3,6 @@ import { useTreasury } from '../../context/TreasuryContext';
 import {
   Layers,
   Trash2,
-  Landmark,
   Plus,
   Edit3,
   ChevronRight,
@@ -12,8 +11,6 @@ import {
   Loader2,
   Wallet,
   AlertTriangle,
-  Check,
-  X,
 } from 'lucide-react';
 import { TransactionType, PayoutArchetype, Account, TreasuryData } from '../../types';
 

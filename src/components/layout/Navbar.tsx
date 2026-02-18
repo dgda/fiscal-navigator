@@ -11,8 +11,6 @@ import {
   Settings,
   LayoutGrid,
   Clock, // Import Clock icon
-  ShieldCheck,
-  AlertTriangle,
 } from 'lucide-react';
 
 interface NavbarProps {

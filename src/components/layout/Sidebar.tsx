@@ -17,7 +17,6 @@ import {
   ArrowLeft,
   Target,
   Repeat,
-  ChevronLeft,
   ChevronRight,
   ShieldCheck,
   ChevronDown,
