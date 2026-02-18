@@ -33,11 +33,28 @@ const CycleContent: React.FC<CycleContentProps> = (props) => {
 
         const cycleStatus = getCycleStatus(cycleData.date, nextCycleDate);
 
+        const columnClasses = [
+          // Layout & Base
+          'relative flex h-full w-[432px] flex-col overflow-visible',
+          'bg-[#F5F5F7] border-r hover:z-50',
+          'dark:border-white/5 dark:bg-[#0A0A0B]',
+
+          // Status: Future
+          cycleStatus === CycleStatus.FUTURE &&
+            'opacity-50 brightness-[0.4] dark:opacity-50 dark:brightness-[0.30]',
+
+          // Status: Past
+          cycleStatus === CycleStatus.PAST && 'opacity-65 brightness-[0.95] dark:brightness-95',
+
+          // Status: Current
+          cycleStatus === CycleStatus.CURRENT &&
+            'shadow-xl shadow-slate-600/20 dark:shadow-zinc-900/90',
+        ]
+          .filter(Boolean)
+          .join(' ');
+
         return (
-          <div
-            key={cycleData.key}
-            className={`relative flex h-full w-[432px] flex-col overflow-visible bg-[#F5F5F7] hover:z-50 dark:border-white/5 dark:bg-[#0A0A0B] ${cycleStatus === CycleStatus.FUTURE && 'opacity-50 brightness-50 dark:opacity-50 dark:brightness-50'} ${cycleStatus === CycleStatus.PAST && 'brightness-95 dark:brightness-75'} border-r`}
-          >
+          <div key={cycleData.key} className={columnClasses}>
             <CycleHeader cycleData={cycleData} cycleStatus={cycleStatus} />
 
             <TransactionList
