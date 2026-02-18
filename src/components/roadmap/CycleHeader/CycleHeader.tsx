@@ -29,7 +29,7 @@ export const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
 
   return (
     <div className="group/cycle relative z-[10] shrink-0 border-b border-black/[0.04] px-4 py-4 backdrop-blur-xl transition-all hover:z-[50] dark:border-white/5">
-      <CycleTitle cycleData={cycleData} />
+      <CycleTitle cycleData={cycleData} cycleStatus={cycleStatus} />
 
       <BalanceCards cycleData={cycleData} cycleStatus={cycleStatus} />
 

@@ -1,14 +1,17 @@
 import React from 'react';
+import { CycleStatus } from '../../../../types/roadmap';
 
 interface MetricBadgeProps {
   label: string;
   value: number;
   isProjected?: boolean;
+  cycleStatus: CycleStatus;
 }
 
 const MetricBadge: React.FC<MetricBadgeProps> = (props) => {
-  const { label, value, isProjected } = props;
+  const { label, value, isProjected, cycleStatus } = props;
   const isNegative = value < 0;
+  const isFuture = cycleStatus === CycleStatus.FUTURE;
 
   const dotColor = isNegative
     ? 'bg-rose-500'
@@ -33,10 +36,12 @@ const MetricBadge: React.FC<MetricBadgeProps> = (props) => {
         {label}
       </span>
       <span className={`text-[9px] font-bold tabular-nums ${textColor}`}>
-        {value.toLocaleString(undefined, {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
+        {!isFuture || (isFuture && isProjected)
+          ? value.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
+          : 'X.XX'}
         <span className={`ml-0.5 text-[7px] font-medium ${unitColor}`}>cyc</span>
       </span>
     </div>
@@ -47,10 +52,11 @@ interface MetricBadgesProps {
   liquidityRunway: number;
   projectedLiquidityRunway: number;
   className?: string;
+  cycleStatus: CycleStatus;
 }
 
 export const MetricBadges: React.FC<MetricBadgesProps> = (props) => {
-  const { liquidityRunway, projectedLiquidityRunway, className = '' } = props;
+  const { liquidityRunway, projectedLiquidityRunway, className = '', cycleStatus } = props;
 
   // Logic: Divider is visible only if neither metric is in a "warning" state
   const showDivider = liquidityRunway >= 0 && projectedLiquidityRunway >= 0;
@@ -59,7 +65,7 @@ export const MetricBadges: React.FC<MetricBadgesProps> = (props) => {
     <div
       className={`flex items-center gap-1 rounded-full border border-black/[0.05] bg-white/50 p-0.5 py-[0.0625rem] pl-1 shadow-[0_1px_2px_rgba(0,0,0,0.02)] backdrop-blur-md transition-all dark:border-white/[0.06] dark:bg-zinc-900/30 ${className}`}
     >
-      <MetricBadge label="Act" value={liquidityRunway} />
+      <MetricBadge label="Act" value={liquidityRunway} cycleStatus={cycleStatus} />
 
       <div
         className={`h-2 w-[0.5px] bg-black/5 transition-opacity duration-500 dark:bg-white/10 ${
@@ -67,7 +73,12 @@ export const MetricBadges: React.FC<MetricBadgesProps> = (props) => {
         }`}
       />
 
-      <MetricBadge label="Prj" value={projectedLiquidityRunway} isProjected />
+      <MetricBadge
+        label="Prj"
+        value={projectedLiquidityRunway}
+        isProjected
+        cycleStatus={cycleStatus}
+      />
     </div>
   );
 };
