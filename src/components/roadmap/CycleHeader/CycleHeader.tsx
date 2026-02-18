@@ -1,16 +1,16 @@
 import React from 'react';
-import { BalanceCards } from './BalanceCards/BalanceCards';
-import { CycleMetricPills } from './CycleMetricPills/CycleMetricPills';
-import { CycleTitle } from './CycleTitle/CycleTitle';
 import LiquidityGapIndicator from './LiquidityGap/LiquidityGap';
 import { CycleStatus, RoadmapCycle } from '../../../types/roadmap';
+import BalanceCards from './BalanceCards/BalanceCards';
+import CycleMetricPills from './CycleMetricPills/CycleMetricPills';
+import CycleTitle from './CycleTitle/CycleTitle';
 
 export interface CycleHeaderProps {
   cycleData: RoadmapCycle;
   cycleStatus: CycleStatus;
 }
 
-export const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
+const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
   const { cycleData, cycleStatus } = props;
   const {
     NET_ACTUAL,
@@ -63,3 +63,5 @@ export const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
     </div>
   );
 };
+
+export default CycleHeader;

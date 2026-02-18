@@ -55,7 +55,7 @@ interface MetricBadgesProps {
   cycleStatus: CycleStatus;
 }
 
-export const MetricBadges: React.FC<MetricBadgesProps> = (props) => {
+const MetricBadges: React.FC<MetricBadgesProps> = (props) => {
   const { liquidityRunway, projectedLiquidityRunway, className = '', cycleStatus } = props;
 
   // Logic: Divider is visible only if neither metric is in a "warning" state
@@ -82,3 +82,5 @@ export const MetricBadges: React.FC<MetricBadgesProps> = (props) => {
     </div>
   );
 };
+
+export default MetricBadges;

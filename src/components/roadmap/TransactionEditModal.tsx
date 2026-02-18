@@ -26,7 +26,7 @@ interface EditModalProps {
   onClose: () => void;
 }
 
-export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose }) => {
+const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose }) => {
   const {
     data,
     commitUpdate,
@@ -480,3 +480,5 @@ export const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, 
     </div>
   );
 };
+
+export default TransactionEditModal;

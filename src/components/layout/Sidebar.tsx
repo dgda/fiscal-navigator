@@ -49,7 +49,7 @@ enum RecurrenceUnit {
   MONTHS = 'months',
 }
 
-export const Sidebar: React.FC<SidebarProps> = (props) => {
+const Sidebar: React.FC<SidebarProps> = (props) => {
   const { data, sync, checkIsTransfer, computedAccounts, renderTypeOptions } = useTreasury();
   const { groupedCycleOptions, masterCycles } = useRoadmap({
     mode: props.filterMode,
@@ -597,3 +597,5 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
     </div>
   );
 };
+
+export default Sidebar;

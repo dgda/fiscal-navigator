@@ -8,7 +8,7 @@ interface BalanceCardsProps {
   cycleStatus: CycleStatus;
 }
 
-export const BalanceCards: React.FC<BalanceCardsProps> = (props) => {
+const BalanceCards: React.FC<BalanceCardsProps> = (props) => {
   const { cycleData, cycleStatus } = props;
   const { NET_ACTUAL, NET_PROJECTED, SURPLUS, MARGIN, PREV_ACTUAL, PREV_PROJECTED } =
     cycleData.headers;
@@ -39,3 +39,5 @@ export const BalanceCards: React.FC<BalanceCardsProps> = (props) => {
     </div>
   );
 };
+
+export default BalanceCards;

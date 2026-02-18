@@ -1,5 +1,5 @@
 import React from 'react';
-import { MetricBadges } from '../MetricBadges/MetricBadges';
+import MetricBadges from '../MetricBadges/MetricBadges';
 import { CycleStatus, RoadmapCycle } from '../../../../types/roadmap';
 
 interface CycleTitleProps {
@@ -7,7 +7,7 @@ interface CycleTitleProps {
   cycleStatus: CycleStatus;
 }
 
-export const CycleTitle: React.FC<CycleTitleProps> = (props) => {
+const CycleTitle: React.FC<CycleTitleProps> = (props) => {
   const { cycleData, cycleStatus } = props;
   const { dateLabel, display, headers } = cycleData;
   const { LIQUIDITY_RUNWAY, PROJECTED_LIQUIDITY_RUNWAY } = headers;
@@ -36,3 +36,5 @@ export const CycleTitle: React.FC<CycleTitleProps> = (props) => {
     </div>
   );
 };
+
+export default CycleTitle;

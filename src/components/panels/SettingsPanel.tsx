@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { TransactionType, PayoutArchetype, Account, TreasuryData } from '../../types';
 
-export const SettingsPanel: React.FC = () => {
+const SettingsPanel: React.FC = () => {
   const { data, sync, computedAccounts, renderTypeOptions, updatePayoutConfig, loading } =
     useTreasury();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -577,3 +577,5 @@ export const SettingsPanel: React.FC = () => {
     </div>
   );
 };
+
+export default SettingsPanel;

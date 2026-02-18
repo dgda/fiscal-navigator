@@ -5,7 +5,7 @@ import { CalendarDays, Activity, X, Compass, BarChart3, AlertTriangle } from 'lu
 import { format, isBefore, parseISO, startOfDay, subDays } from 'date-fns';
 import { Transaction } from '../../types';
 import { CycleHeaders, CycleStatus } from '../../types/roadmap';
-import { CycleHeader } from './CycleHeader/CycleHeader';
+import CycleHeader from './CycleHeader/CycleHeader';
 import TransactionList from './TransactionList/TransactionList';
 
 interface RoadmapSpreadsheetProps {
@@ -15,7 +15,7 @@ interface RoadmapSpreadsheetProps {
   onHighlightComplete: () => void;
 }
 
-export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
+const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
   filter,
   onEdit,
   highlightId,
@@ -446,3 +446,5 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
     </div>
   );
 };
+
+export default RoadmapSpreadsheet;

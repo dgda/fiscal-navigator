@@ -1,5 +1,5 @@
 import React from 'react';
-import { CycleMetricPill } from './CycleMetricPill';
+import CycleMetricPill from './CycleMetricPill';
 import { ArrowUpRight, ArrowDownRight, Wallet, Target, PieChart } from 'lucide-react';
 import { CycleHeaders } from '../../../../types/roadmap';
 
@@ -7,7 +7,7 @@ export interface CycleMetricPillsProps {
   cycleHeaders: CycleHeaders;
 }
 
-export const CycleMetricPills: React.FC<CycleMetricPillsProps> = (props) => {
+const CycleMetricPills: React.FC<CycleMetricPillsProps> = (props) => {
   const { cycleHeaders } = props;
   const { INFLOW, PLANNED, CLEARED, MARGIN, SURPLUS } = cycleHeaders;
   return (
@@ -97,3 +97,5 @@ export const CycleMetricPills: React.FC<CycleMetricPillsProps> = (props) => {
     </div>
   );
 };
+
+export default CycleMetricPills;

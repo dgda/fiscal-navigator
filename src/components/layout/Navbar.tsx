@@ -20,7 +20,7 @@ interface NavbarProps {
   setActiveView: (view: 'roadmap' | 'settings') => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
+const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
   const { computedAccounts, totalLiquidity } = useTreasury();
   const { theme, toggleTheme, isSystemDefault, setUseSystemDefault } = useTheme();
 
@@ -198,3 +198,5 @@ export const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => 
     </nav>
   );
 };
+
+export default Navbar;

@@ -9,7 +9,7 @@ export interface CycleMetricPillsProps {
   tooltipContent?: React.ReactNode;
 }
 
-export const CycleMetricPill: React.FC<CycleMetricPillsProps> = (props) => {
+const CycleMetricPill: React.FC<CycleMetricPillsProps> = (props) => {
   const { label, value, icon: Icon, colorClass, valueColorClass, tooltipContent } = props;
   return (
     <div
@@ -39,3 +39,5 @@ export const CycleMetricPill: React.FC<CycleMetricPillsProps> = (props) => {
     </div>
   );
 };
+
+export default CycleMetricPill;
