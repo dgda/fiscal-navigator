@@ -29,6 +29,7 @@ import {
 import { Transaction } from '../../../types';
 import SidebarToggle from './SidebarToggle/SidebarToggle';
 import SidebarSettingsView from './SidebarSettingsView/SidebarSettingsView';
+import SidebarTimelineSection from './SidebarRoadmapView/SidebarTimelineSection/SidebarTimelineSection';
 
 interface SidebarProps {
   filterMode: FilterMode;
@@ -205,75 +206,12 @@ const Sidebar: React.FC<SidebarProps> = (props) => {
       >
         {props.activeView === 'roadmap' ? (
           <>
-            <section className="mb-6 space-y-2.5">
-              <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400/80 dark:text-slate-500">
-                  Timeline
-                </span>
-              </div>
-
-              <div className="flex rounded-[10px] bg-slate-200/50 p-1 dark:bg-white/5">
-                {Object.values(FilterMode).map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => props.setFilterMode(m)}
-                    className={`flex-1 rounded-[7px] py-1.5 text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ${
-                      props.filterMode === m
-                        ? 'bg-white text-slate-900 shadow-sm dark:bg-[#2D2D2D] dark:text-white dark:shadow-black/20'
-                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                    }`}
-                  >
-                    {m}
-                  </button>
-                ))}
-              </div>
-
-              {props.filterMode !== 'all' && (
-                <div className="animate-in slide-in-from-top-1 fade-in grid grid-cols-2 gap-2 duration-300">
-                  {props.filterMode === 'month' && (
-                    <div className={inputGroupClass}>
-                      <div className="relative w-full">
-                        <select
-                          value={props.filterMonth}
-                          onChange={(e) => props.setFilterMonth(Number(e.target.value))}
-                          className={`${inputBaseClass} appearance-none`}
-                        >
-                          {[
-                            'Jan',
-                            'Feb',
-                            'Mar',
-                            'Apr',
-                            'May',
-                            'Jun',
-                            'Jul',
-                            'Aug',
-                            'Sep',
-                            'Oct',
-                            'Nov',
-                            'Dec',
-                          ].map((m, i) => (
-                            <option key={m} value={i}>
-                              {m}
-                            </option>
-                          ))}
-                        </select>
-                        {selectChevron}
-                      </div>
-                    </div>
-                  )}
-                  <div
-                    className={`${inputGroupClass} ${props.filterMode === 'year' ? 'col-span-2' : ''}`}
-                  >
-                    <input
-                      type="number"
-                      value={props.filterYear}
-                      onChange={(e) => props.setFilterYear(Number(e.target.value))}
-                      className={`${inputBaseClass} text-center font-bold`}
-                    />
-                  </div>
-                </div>
-              )}
-            </section>
+            <SidebarTimelineSection
+              {...props}
+              inputBaseClass={inputBaseClass}
+              inputGroupClass={inputGroupClass}
+              selectChevron={selectChevron}
+            />
 
             <section className="flex-1 space-y-5">
               <div className="flex items-center justify-between px-1">
