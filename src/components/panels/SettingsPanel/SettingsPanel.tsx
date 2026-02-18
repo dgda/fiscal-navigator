@@ -1,26 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useTreasury } from '../../../context/TreasuryContext';
-import {
-  Layers,
-  Trash2,
-  Plus,
-  Edit3,
-  ChevronRight,
-  Activity,
-  Zap,
-  Loader2,
-  Wallet,
-  AlertTriangle,
-} from 'lucide-react';
-import { TransactionType, PayoutArchetype, Account, TreasuryData } from '../../../types';
+import { TransactionType, Account, TreasuryData } from '../../../types';
 import DeleteConfirmationModal from './DeleteConfirmationModal/DeleteConfirmationModal';
 import TransactionCategoriesSection from './TransactionCategoriesSection/TransactionCategoriesSection';
 import AccountsSection from './AccountsSection/AccountsSection';
 import PayoutSection from './PayoutSection/PayoutSection';
 
 const SettingsPanel: React.FC = () => {
-  const { data, sync, computedAccounts, renderTypeOptions, updatePayoutConfig, loading } =
-    useTreasury();
+  const { data, sync } = useTreasury();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
@@ -29,22 +16,6 @@ const SettingsPanel: React.FC = () => {
     type: 'account' | 'taxonomy';
     item: Account | TransactionType;
   } | null>(null);
-
-  // SAFETY GATE
-  if (loading || !data?.payoutConfig) {
-    return (
-      <div className="flex h-full flex-1 items-center justify-center bg-[#F5F5F7] dark:bg-[#000000]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-lg ring-1 ring-black/5 dark:bg-[#1C1C1E] dark:ring-white/10">
-            <Loader2 className="animate-spin text-blue-600 dark:text-blue-400" size={20} />
-          </div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-            Synchronizing Treasury
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   const handleUpdate = (next: TreasuryData) => sync(next);
 
@@ -83,7 +54,6 @@ const SettingsPanel: React.FC = () => {
     setEditingId(null);
   };
 
-  // --- LUXURY STYLES ---
   const sectionClass =
     'overflow-hidden rounded-[24px] border border-black/5 bg-[#FBFBFD] shadow-sm dark:border-white/5 dark:bg-[#141416]';
   const headerClass =
@@ -123,7 +93,6 @@ const SettingsPanel: React.FC = () => {
         </div>
       </main>
 
-      {/* DELETE CONFIRMATION MODAL */}
       <DeleteConfirmationModal
         deleteCandidate={deleteCandidate}
         executeDelete={executeDelete}
