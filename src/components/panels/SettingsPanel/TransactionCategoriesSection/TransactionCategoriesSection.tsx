@@ -3,7 +3,7 @@ import { Account, TransactionType, TreasuryData } from '../../../../types';
 import { useTreasury } from '../../../../context/TreasuryContext';
 import { ChevronRight, Edit3, Trash2, Layers, Plus } from 'lucide-react';
 
-interface TransactionCategoriesProps {
+interface TransactionCategoriesSectionProps {
   sectionClass: string;
   headerClass: string;
   handleUpdate: (next: TreasuryData) => Promise<void>;
@@ -26,7 +26,7 @@ interface TransactionCategoriesProps {
   ) => void;
 }
 
-const TransactionCategories: React.FC<TransactionCategoriesProps> = (props) => {
+const TransactionCategoriesSection: React.FC<TransactionCategoriesSectionProps> = (props) => {
   const {
     sectionClass,
     headerClass,
@@ -203,4 +203,4 @@ const TransactionCategories: React.FC<TransactionCategoriesProps> = (props) => {
   );
 };
 
-export default TransactionCategories;
+export default TransactionCategoriesSection;

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { TransactionType, PayoutArchetype, Account, TreasuryData } from '../../../types';
 import DeleteConfirmationModal from './DeleteConfirmationModal/DeleteConfirmationModal';
-import TransactionCategories from './TransactionCategories/TransactionCategories';
+import TransactionCategoriesSection from './TransactionCategoriesSection/TransactionCategoriesSection';
 
 const SettingsPanel: React.FC = () => {
   const { data, sync, computedAccounts, renderTypeOptions, updatePayoutConfig, loading } =
@@ -368,7 +368,7 @@ const SettingsPanel: React.FC = () => {
               </div>
             </section>
 
-            <TransactionCategories
+            <TransactionCategoriesSection
               sectionClass={sectionClass}
               headerClass={headerClass}
               handleUpdate={handleUpdate}
