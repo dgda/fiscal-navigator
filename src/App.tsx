@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TreasuryProvider } from './context/TreasuryContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/layout/Navbar';
-import Sidebar from './components/layout/Sidebar';
+import Sidebar from './components/layout/Sidebar/Sidebar';
 import RoadmapSpreadsheet from './components/roadmap/RoadmapSpreadsheet';
 import TransactionEditModal from './components/roadmap/TransactionEditModal';
 import SettingsPanel from './components/panels/SettingsPanel/SettingsPanel'; // Re-integrated Import
