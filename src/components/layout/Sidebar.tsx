@@ -572,13 +572,7 @@ const Sidebar: React.FC<SidebarProps> = (props) => {
       >
         <button
           onClick={props.onToggle}
-          // className={`group relative flex h-14 w-6 items-center justify-center transition-all duration-500  ${
           className={`group relative flex h-14 w-6 items-center justify-center rounded-r-2xl bg-white/80 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] ring-1 ring-black/5 backdrop-blur-xl transition-all duration-500 dark:bg-[#1C1C1E]/80 dark:ring-white/10`}
-          //   props.isOpen
-          //     ? 'bg-transparent opacity-40 hover:opacity-100'
-          //     : 'rounded-r-2xl bg-white/80 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] ring-1 ring-black/5 backdrop-blur-xl dark:bg-[#1C1C1E]/80 dark:ring-white/10'
-          // }
-          //  `}
         >
           <div
             className={`transition-all duration-500 ${props.isOpen ? 'rotate-180 text-slate-400' : 'rotate-0 text-blue-500'}`}
