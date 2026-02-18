@@ -1,12 +1,8 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useTreasury } from '../../context/TreasuryContext';
 import { UseRoadmapProps, useRoadmap } from '../../hooks/useRoadmap';
-import { CalendarDays, Activity, Compass } from 'lucide-react';
-import { format, isBefore, parseISO, startOfDay } from 'date-fns';
+import { format } from 'date-fns';
 import { Transaction } from '../../types';
-import { CycleStatus } from '../../types/roadmap';
-import CycleHeader from './CycleHeader/CycleHeader';
-import TransactionList from './TransactionList/TransactionList';
 import DeleteModal from './DeleteModal/DeleteModal';
 import AuditPanel from './AuditPanel/AuditPanel';
 import TimelineSidebar from './TimelineSidebar/TimelineSidebar';
