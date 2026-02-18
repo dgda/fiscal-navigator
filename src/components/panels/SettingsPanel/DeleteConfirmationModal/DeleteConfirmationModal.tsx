@@ -1,5 +1,5 @@
 import React from 'react';
-import { Account, TransactionType } from '../../../types';
+import { Account, TransactionType } from '../../../../types';
 import { AlertTriangle } from 'lucide-react';
 
 interface DeleteConfirmationModalProps {

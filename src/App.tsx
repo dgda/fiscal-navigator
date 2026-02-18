@@ -5,7 +5,7 @@ import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
 import RoadmapSpreadsheet from './components/roadmap/RoadmapSpreadsheet';
 import TransactionEditModal from './components/roadmap/TransactionEditModal';
-import SettingsPanel from './components/panels/SettingsPanel'; // Re-integrated Import
+import SettingsPanel from './components/panels/SettingsPanel/SettingsPanel'; // Re-integrated Import
 import { FilterMode, UseRoadmapProps } from './hooks/useRoadmap';
 
 const App: React.FC = () => {

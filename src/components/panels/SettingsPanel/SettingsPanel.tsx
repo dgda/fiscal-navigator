@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useTreasury } from '../../context/TreasuryContext';
+import { useTreasury } from '../../../context/TreasuryContext';
 import {
   Layers,
   Trash2,
@@ -12,7 +12,7 @@ import {
   Wallet,
   AlertTriangle,
 } from 'lucide-react';
-import { TransactionType, PayoutArchetype, Account, TreasuryData } from '../../types';
+import { TransactionType, PayoutArchetype, Account, TreasuryData } from '../../../types';
 import DeleteConfirmationModal from './DeleteConfirmationModal/DeleteConfirmationModal';
 
 const SettingsPanel: React.FC = () => {
