@@ -30,14 +30,7 @@ export const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
     <div className="group/cycle relative z-[10] shrink-0 border-b border-black/[0.04] bg-[#F5F5F7]/95 px-4 py-4 backdrop-blur-xl transition-all hover:z-[50] dark:border-white/5 dark:bg-[#0A0A0B]/95">
       <CycleTitle cycleData={cycleData} />
 
-      <BalanceCards
-        NET_ACTUAL={NET_ACTUAL}
-        prevActual={PREV_ACTUAL}
-        NET_PROJECTED={NET_PROJECTED}
-        prevProjected={PREV_PROJECTED}
-        SURPLUS={SURPLUS}
-        MARGIN={MARGIN}
-      />
+      <BalanceCards cycleData={cycleData} />
 
       {/* ACTUAL STATUS */}
       <LiquidityGapIndicator
