@@ -1,32 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useTreasury } from '../../../context/TreasuryContext';
-import { FilterMode, useRoadmap } from '../../../hooks/useRoadmap';
-import {
-  parseISO,
-  isAfter,
-  format,
-  addMonths,
-  setDate,
-  lastDayOfMonth,
-  isBefore,
-  startOfDay,
-  addDays,
-  addWeeks,
-} from 'date-fns';
-import {
-  ArrowLeft,
-  Target,
-  Repeat,
-  ChevronRight,
-  ShieldCheck,
-  ChevronDown,
-  Plus,
-  Calendar,
-  CreditCard,
-  Hash,
-  Tag,
-} from 'lucide-react';
-import { Transaction } from '../../../types';
+import React from 'react';
+import { FilterMode } from '../../../hooks/useRoadmap';
+import { ChevronDown } from 'lucide-react';
 import SidebarToggle from './SidebarToggle/SidebarToggle';
 import SidebarSettingsView from './SidebarSettingsView/SidebarSettingsView';
 import SidebarTimelineSection from './SidebarRoadmapView/SidebarTimelineSection/SidebarTimelineSection';
