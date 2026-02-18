@@ -81,7 +81,7 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
     if (!isPlanned) setIsPaid(true);
   }, [isPlanned]);
 
-  const handleCommit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCommit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const f = new FormData(e.currentTarget);
