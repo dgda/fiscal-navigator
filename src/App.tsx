@@ -32,22 +32,19 @@ const App: React.FC = () => {
           <Navbar activeView={activeView} setActiveView={setActiveView} />
 
           <div className="flex flex-1 overflow-hidden">
-            {/* LEFT COMMAND SIDEBAR: Only visible in Roadmap view */}
-            {activeView === 'roadmap' && (
-              <Sidebar
-                filterMode={filter.mode}
-                setFilterMode={(m) => setFilter({ ...filter, mode: m })}
-                filterYear={filter.year}
-                setFilterYear={(y) => setFilter({ ...filter, year: y })}
-                filterMonth={filter.month}
-                setFilterMonth={(m) => setFilter({ ...filter, month: m })}
-                activeView={activeView}
-                setActiveView={setActiveView}
-                onCommitSuccess={(id) => setHighlightId(id)}
-                isOpen={sidebarOpen}
-                onToggle={() => setSidebarOpen(!sidebarOpen)}
-              />
-            )}
+            <Sidebar
+              filterMode={filter.mode}
+              setFilterMode={(m) => setFilter({ ...filter, mode: m })}
+              filterYear={filter.year}
+              setFilterYear={(y) => setFilter({ ...filter, year: y })}
+              filterMonth={filter.month}
+              setFilterMonth={(m) => setFilter({ ...filter, month: m })}
+              activeView={activeView}
+              setActiveView={setActiveView}
+              onCommitSuccess={(id) => setHighlightId(id)}
+              isOpen={sidebarOpen}
+              onToggle={() => setSidebarOpen(!sidebarOpen)}
+            />
 
             {/* MAIN LEDGER SPACE */}
             <main className="relative flex flex-1 flex-col overflow-hidden">
