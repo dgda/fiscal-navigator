@@ -19,23 +19,6 @@ const SettingsPanel: React.FC = () => {
 
   const handleUpdate = (next: TreasuryData) => sync(next);
 
-  const executeDelete = () => {
-    if (!deleteCandidate) return;
-
-    if (deleteCandidate.type === 'account') {
-      handleUpdate({
-        ...data,
-        accounts: data.accounts.filter((x) => x.id !== deleteCandidate.item.id),
-      });
-    } else {
-      handleUpdate({
-        ...data,
-        types: data.types.filter((t) => t.id !== deleteCandidate.item.id),
-      });
-    }
-    setDeleteCandidate(null);
-  };
-
   const toggleNode = (id: string) => {
     setExpandedNodes((prev) => {
       const next = new Set(prev);
@@ -95,8 +78,8 @@ const SettingsPanel: React.FC = () => {
 
       <DeleteConfirmationModal
         deleteCandidate={deleteCandidate}
-        executeDelete={executeDelete}
         setDeleteCandidate={setDeleteCandidate}
+        handleUpdate={handleUpdate}
       />
     </div>
   );

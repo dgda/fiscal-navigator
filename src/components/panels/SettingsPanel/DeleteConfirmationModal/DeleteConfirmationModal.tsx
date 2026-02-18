@@ -1,6 +1,7 @@
 import React from 'react';
-import { Account, TransactionType } from '../../../../types';
+import { Account, TransactionType, TreasuryData } from '../../../../types';
 import { AlertTriangle } from 'lucide-react';
+import { useTreasury } from '../../../../context/TreasuryContext';
 
 interface DeleteConfirmationModalProps {
   deleteCandidate: {
@@ -13,11 +14,31 @@ interface DeleteConfirmationModalProps {
       item: Account | TransactionType;
     } | null>,
   ) => void;
-  executeDelete: () => void;
+  handleUpdate: (next: TreasuryData) => Promise<void>;
 }
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (props) => {
-  const { deleteCandidate, setDeleteCandidate, executeDelete } = props;
+  const { deleteCandidate, setDeleteCandidate, handleUpdate } = props;
+
+  const { data } = useTreasury();
+
+  const executeDelete = () => {
+    if (!deleteCandidate) return;
+
+    if (deleteCandidate.type === 'account') {
+      handleUpdate({
+        ...data,
+        accounts: data.accounts.filter((x) => x.id !== deleteCandidate.item.id),
+      });
+    } else {
+      handleUpdate({
+        ...data,
+        types: data.types.filter((t) => t.id !== deleteCandidate.item.id),
+      });
+    }
+    setDeleteCandidate(null);
+  };
+
   return (
     <>
       {deleteCandidate && (
