@@ -10,6 +10,8 @@ import TransactionList from './TransactionList/TransactionList';
 import DeleteModal from './DeleteModal/DeleteModal';
 import AuditPanel from './AuditPanel/AuditPanel';
 import TimelineSidebar from './TimelineSidebar/TimelineSidebar';
+import CycleContent from './CycleContent/CycleContent';
+import MonthHeader from './MonthHeader/MonthHeader';
 
 interface RoadmapSpreadsheetProps {
   filter: UseRoadmapProps;
@@ -63,29 +65,6 @@ const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
       deleteSeries(deleteCandidate.recurringGroupId);
     }
     setDeleteCandidate(null);
-  };
-
-  const getCycleStatus = (date: string, nextCycleDate: string | undefined): CycleStatus => {
-    // Use startOfDay for absolute calendar date comparison
-    const today = startOfDay(new Date());
-    const cycleStart = startOfDay(parseISO(date));
-
-    // 1. FUTURE: If today hasn't even reached the start of this cycle yet
-    if (isBefore(today, cycleStart)) {
-      return CycleStatus.FUTURE;
-    }
-
-    // 2. PAST: A cycle is past if today has reached or passed the NEXT cycle's start
-    if (nextCycleDate) {
-      const nextStart = startOfDay(parseISO(nextCycleDate));
-      // If today is NOT before the next start, it means today is >= nextStart
-      if (!isBefore(today, nextStart)) {
-        return CycleStatus.PAST;
-      }
-    }
-
-    // 3. CURRENT: Today is >= cycleStart AND (no next cycle OR today < nextStart)
-    return CycleStatus.CURRENT;
   };
 
   useEffect(() => {
@@ -142,58 +121,16 @@ const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
             }}
             className="flex h-full flex-col border-r border-black/[0.04] dark:border-white/5"
           >
-            {/* PINNED MONTH HEADER: shrink-0 prevents it from scrolling away */}
-            <div className="sticky top-0 z-[40] flex shrink-0 items-center justify-between border-b border-black/[0.04] bg-[#F5F5F7]/80 px-5 py-3 backdrop-blur-xl dark:border-white/5 dark:bg-[#141416]/80">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-white text-slate-900 shadow-sm dark:bg-white/10 dark:text-slate-300">
-                  <CalendarDays size={12} />
-                </div>
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-white">
-                  {monthLabel}
-                </h2>
-              </div>
-              <button
-                onClick={() => setActiveMonthSummary(monthLabel)}
-                className="group flex items-center gap-1.5 rounded-full border border-black/5 bg-white px-3 py-1 text-[9px] font-bold text-slate-500 shadow-sm transition-all hover:border-blue-500/30 hover:text-blue-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
-              >
-                <Activity size={10} /> <span>AUDIT</span>
-              </button>
-            </div>
+            <MonthHeader monthLabel={monthLabel} setActiveMonthSummary={setActiveMonthSummary} />
 
-            {/* CYCLES WRAPPER: min-h-0 allows the flex-1 to strictly enforce the height */}
-            <div className="flex h-full min-h-0 flex-1 overflow-visible">
-              {cycleMeta.map((meta, index, arr) => {
-                const cycleData = roadmap.find((r) => r.key === meta.key);
-                if (!cycleData) return null;
-                // 1. Find the index of THIS cycle in the GLOBAL roadmap array
-                const globalIndex = roadmap.findIndex((r) => r.key === meta.key);
-
-                // 2. Look ahead in the GLOBAL array, not the local monthly 'arr'
-                const nextCycleData = roadmap[globalIndex + 1];
-                const nextCycleDate = nextCycleData?.date;
-
-                const cycleStatus = getCycleStatus(cycleData.date, nextCycleDate);
-
-                return (
-                  <div
-                    key={cycleData.key}
-                    className={`relative flex h-full w-[432px] flex-col overflow-visible bg-[#F5F5F7] hover:z-50 dark:border-white/5 dark:bg-[#0A0A0B] ${cycleStatus === CycleStatus.FUTURE && 'opacity-50 brightness-50 dark:opacity-50 dark:brightness-50'} ${cycleStatus === CycleStatus.PAST && 'brightness-95 dark:brightness-75'} border-r`}
-                  >
-                    <CycleHeader cycleData={cycleData} cycleStatus={cycleStatus} />
-
-                    <TransactionList
-                      ref={(el) => {
-                        cycleScrollRefs.current[cycleData.key] = el;
-                      }}
-                      cycleData={cycleData}
-                      onEdit={onEdit}
-                      highlightId={highlightId}
-                      setDeleteCandidate={setDeleteCandidate}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+            <CycleContent
+              cycleMeta={cycleMeta}
+              roadmap={roadmap}
+              onEdit={onEdit}
+              highlightId={highlightId}
+              setDeleteCandidate={setDeleteCandidate}
+              cycleScrollRefs={cycleScrollRefs}
+            />
           </div>
         ))}
       </div>
