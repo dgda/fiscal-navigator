@@ -1,19 +1,23 @@
-import { DndContext } from '@dnd-kit/core/dist/components/DndContext/DndContext';
-import { KeyboardSensor } from '@dnd-kit/core/dist/sensors/keyboard/KeyboardSensor';
-import { PointerSensor } from '@dnd-kit/core/dist/sensors/pointer/PointerSensor';
-import { useSensor } from '@dnd-kit/core/dist/sensors/useSensor';
-import { useSensors } from '@dnd-kit/core/dist/sensors/useSensors';
-import { closestCenter } from '@dnd-kit/core/dist/utilities/algorithms/closestCenter';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable/dist/sensors/keyboard/sortableKeyboardCoordinates';
 import React, { useMemo } from 'react';
 import { useTreasury } from '../../../context/TreasuryContext';
 import { Transaction } from '../../../types';
 import { RoadmapCycle } from '../../../types/roadmap';
-import { arrayMove } from '@dnd-kit/sortable/dist/utilities/arrayMove';
-import { SortableContext } from '@dnd-kit/sortable/dist/components/SortableContext';
-import { verticalListSortingStrategy } from '@dnd-kit/sortable/dist/strategies/verticalListSorting';
 import { format, parseISO } from 'date-fns';
 import SortableTransactionRow from './SortableTransactionRow';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface TransactionListProps {
   ref: React.Ref<HTMLDivElement> | undefined;
