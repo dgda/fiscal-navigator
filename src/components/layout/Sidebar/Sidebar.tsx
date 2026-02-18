@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { Transaction } from '../../../types';
 import SidebarToggle from './SidebarToggle/SidebarToggle';
+import SidebarSettingsView from './SidebarSettingsView/SidebarSettingsView';
 
 interface SidebarProps {
   filterMode: FilterMode;
@@ -535,36 +536,11 @@ const Sidebar: React.FC<SidebarProps> = (props) => {
             </section>
           </>
         ) : (
-          <div className="space-y-6">
-            <button
-              onClick={() => props.setActiveView('roadmap')}
-              className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400"
-            >
-              <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />{' '}
-              Return to Roadmap
-            </button>
-            <div className="rounded-[14px] border border-black/5 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-[#1C1C1E]">
-              <p className="mb-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                <ShieldCheck size={12} /> Core Infrastructure
-              </p>
-              <div className="space-y-2">
-                <label className="text-[9px] font-bold uppercase text-slate-400">
-                  Monthly Base Salary
-                </label>
-                <div className={inputGroupClass}>
-                  <div className="absolute left-3 text-emerald-500">
-                    <span className="font-mono text-[12px] font-bold">₱</span>
-                  </div>
-                  <input
-                    type="number"
-                    defaultValue={data.baseSalary}
-                    onBlur={(e) => sync({ ...data, baseSalary: Number(e.target.value) })}
-                    className={`${inputBaseClass} pl-8`}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          <SidebarSettingsView
+            setActiveView={props.setActiveView}
+            inputGroupClass={inputGroupClass}
+            inputBaseClass={inputBaseClass}
+          />
         )}
       </aside>
 
