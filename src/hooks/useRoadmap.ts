@@ -228,23 +228,23 @@ export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
 
     for (let i = 0; i < futureCycles.length; i++) {
       const cycle = futureCycles[i];
-      const unpaidPlanned = Math.max(0, cycle.headers.PLANNED - cycle.headers.CLEARED);
+      const unpaidPlanned = Math.max(0, cycle.headers.UNPAID_IN_CYCLE);
 
-      // Calculate actual days in THIS specific cycle
       const currentD = parseISO(cycle.date);
       const nextD = futureCycles[i + 1]
         ? parseISO(futureCycles[i + 1].date)
-        : addDays(currentD, payoutConfig.fixedIntervalDays || 15); // Fallback to config
+        : addDays(currentD, payoutConfig.fixedIntervalDays || 15);
 
-      const daysInCycle = Math.max(0, differenceInDays(nextD, currentD));
+      // FIX: For the first cycle, count from 'now', not from the cycle start date
+      const startPoint = i === 0 ? now : currentD;
+      const daysInPeriod = Math.max(0, differenceInDays(nextD, startPoint));
 
       if (remainingRealCash >= unpaidPlanned) {
         remainingRealCash -= unpaidPlanned;
-        bDays += daysInCycle;
+        bDays += daysInPeriod;
       } else {
-        // Calculate the partial month/cycle coverage
         const ratio = unpaidPlanned > 0 ? remainingRealCash / unpaidPlanned : 1;
-        bDays += Math.floor(ratio * daysInCycle);
+        bDays += Math.floor(ratio * daysInPeriod);
         break;
       }
     }
