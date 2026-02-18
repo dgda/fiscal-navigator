@@ -16,7 +16,7 @@ export const CycleMetricPill: React.FC<CycleMetricPillsProps> = (props) => {
       className={`group relative flex min-w-0 flex-1 flex-col justify-center rounded-xl border px-2 py-1.5 ${colorClass} transition-all duration-300`}
     >
       {tooltipContent && (
-        <div className="pointer-events-none absolute -top-2 left-1/2 z-[1000] w-max -translate-x-1/2 -translate-y-full scale-95 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
+        <div className="pointer-events-none absolute -top-2 left-1/2 z-[10000] w-max -translate-x-1/2 -translate-y-full scale-95 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
           <div className="rounded-2xl border border-black/5 bg-white/90 p-2.5 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#1C1C1E]/90">
             <div className="mb-1.5 border-b border-black/5 pb-1 text-[8px] font-black uppercase tracking-widest text-slate-400 dark:border-white/5">
               {label} Breakdown

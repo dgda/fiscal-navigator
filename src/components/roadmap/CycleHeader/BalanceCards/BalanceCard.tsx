@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShieldCheck, BarChart3, LucideIcon } from 'lucide-react';
 import { DEFAULT_HIDDEN_AMOUNT } from '../../../../constants';
+import { CycleStatus } from '../../../../types/roadmap';
 
 interface BalanceCardProps {
   label: string;
@@ -10,21 +11,13 @@ interface BalanceCardProps {
   prevLabel: string;
   flowLabel: string;
   variant: 'blue' | 'teal';
-  isCurrentCycle?: boolean;
+  cycleStatus: CycleStatus;
 }
 
 const BalanceCard: React.FC<BalanceCardProps> = (props) => {
-  const {
-    label,
-    value,
-    prevValue,
-    flowValue,
-    prevLabel,
-    flowLabel,
-    variant,
-    isCurrentCycle = true,
-  } = props;
+  const { label, value, prevValue, flowValue, prevLabel, flowLabel, variant, cycleStatus } = props;
   const isBlue = variant === 'blue';
+  const isFuture = cycleStatus === CycleStatus.FUTURE;
   const Icon: LucideIcon = isBlue ? ShieldCheck : BarChart3;
 
   // Dynamic color mapping
@@ -43,12 +36,12 @@ const BalanceCard: React.FC<BalanceCardProps> = (props) => {
 
   return (
     <div
-      className={`hover:z-100 group relative flex flex-col justify-center rounded-[18px] border px-3.5 py-3 shadow-sm transition-all ${isBlue ? styles.bgBlue : styles.bgTeal} ${!isCurrentCycle && isBlue && 'cursor-not-allowed'}`}
+      className={`hover:z-100 group relative flex flex-col justify-center rounded-[18px] border px-3.5 py-3 shadow-sm transition-all ${isBlue ? styles.bgBlue : styles.bgTeal} ${cycleStatus === CycleStatus.FUTURE && isBlue && 'cursor-not-allowed'}`}
     >
       {/* TOOLTIP: MATH BREAKDOWN */}
 
       <div className="pointer-events-none absolute -top-1 left-1/2 z-[1000] w-max -translate-x-1/2 -translate-y-full scale-95 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
-        {isCurrentCycle && (
+        {(!isFuture || (isFuture && !isBlue)) && (
           <>
             <div className="rounded-2xl border border-black/5 bg-white p-3 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#1C1C1E]">
               <div
@@ -86,7 +79,7 @@ const BalanceCard: React.FC<BalanceCardProps> = (props) => {
         className={`font-mono text-[16px] font-black tracking-tight ${value < 0 ? 'text-red-500' : isBlue ? 'text-blue-700 dark:text-blue-300' : 'text-teal-700 dark:text-teal-300'}`}
       >
         <span className="mr-0.5 font-sans text-[12px] font-medium opacity-40">₱</span>
-        {isCurrentCycle ? format(value) : DEFAULT_HIDDEN_AMOUNT}
+        {!isFuture || (isFuture && !isBlue) ? format(value) : DEFAULT_HIDDEN_AMOUNT}
       </span>
     </div>
   );

@@ -3,15 +3,15 @@ import { BalanceCards } from './BalanceCards/BalanceCards';
 import { CycleMetricPills } from './CycleMetricPills/CycleMetricPills';
 import { CycleTitle } from './CycleTitle/CycleTitle';
 import LiquidityGapIndicator from './LiquidityGap/LiquidityGap';
-import { RoadmapCycle } from '../../../types/roadmap';
+import { CycleStatus, RoadmapCycle } from '../../../types/roadmap';
 
 export interface CycleHeaderProps {
   cycleData: RoadmapCycle;
-  isCurrentCycle: boolean;
+  cycleStatus: CycleStatus;
 }
 
 export const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
-  const { cycleData, isCurrentCycle } = props;
+  const { cycleData, cycleStatus } = props;
   const {
     NET_ACTUAL,
     PREV_ACTUAL,
@@ -28,10 +28,10 @@ export const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
   } = cycleData.headers;
 
   return (
-    <div className="group/cycle relative z-[10] shrink-0 border-b border-black/[0.04] bg-[#F5F5F7]/95 px-4 py-4 backdrop-blur-xl transition-all hover:z-[50] dark:border-white/5 dark:bg-[#0A0A0B]/95">
+    <div className="group/cycle relative z-[10] shrink-0 border-b border-black/[0.04] px-4 py-4 backdrop-blur-xl transition-all hover:z-[50] dark:border-white/5">
       <CycleTitle cycleData={cycleData} />
 
-      <BalanceCards cycleData={cycleData} isCurrentCycle={isCurrentCycle} />
+      <BalanceCards cycleData={cycleData} cycleStatus={cycleStatus} />
 
       {/* ACTUAL STATUS */}
       <LiquidityGapIndicator
@@ -43,7 +43,7 @@ export const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
         comparisonLabel="Unpaid Planned Bills"
         marginValue={REALITY_CHECK}
         marginLabel="Survival Margin"
-        isCurrentCycle={isCurrentCycle}
+        cycleStatus={cycleStatus}
       />
 
       {/* PROJECTED STATUS */}
@@ -57,6 +57,7 @@ export const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
         comparisonLabel="Planned Bills"
         marginValue={PROJECTED_CHECK}
         marginLabel="Projected Survival Margin"
+        cycleStatus={cycleStatus}
       />
       <CycleMetricPills cycleHeaders={cycleData.headers} />
     </div>

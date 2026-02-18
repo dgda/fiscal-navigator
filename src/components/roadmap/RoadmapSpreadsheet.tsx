@@ -4,7 +4,7 @@ import { UseRoadmapProps, useRoadmap } from '../../hooks/useRoadmap';
 import { CalendarDays, Activity, X, Compass, BarChart3, AlertTriangle } from 'lucide-react';
 import { format, isBefore, parseISO, startOfDay, subDays } from 'date-fns';
 import { Transaction } from '../../types';
-import { CycleHeaders } from '../../types/roadmap';
+import { CycleHeaders, CycleStatus } from '../../types/roadmap';
 import { CycleHeader } from './CycleHeader/CycleHeader';
 import TransactionList from './TransactionList/TransactionList';
 
@@ -62,22 +62,27 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
     setDeleteCandidate(null);
   };
 
-  const getIsCurrentCycle = (date: string, nextCycleDate: string | undefined): boolean => {
+  const getCycleStatus = (date: string, nextCycleDate: string | undefined): CycleStatus => {
+    // Use startOfDay for absolute calendar date comparison
     const today = startOfDay(new Date());
     const cycleStart = startOfDay(parseISO(date));
 
-    // 1. If today is before the cycle start, it's a future cycle.
-    if (isBefore(today, cycleStart)) return false;
-
-    // 2. If there is a next cycle, check if today has reached it yet.
-    if (nextCycleDate) {
-      const nextStart = startOfDay(parseISO(nextCycleDate));
-      return isBefore(today, nextStart);
+    // 1. FUTURE: If today hasn't even reached the start of this cycle yet
+    if (isBefore(today, cycleStart)) {
+      return CycleStatus.FUTURE;
     }
 
-    // 3. If there's no next cycle (end of roadmap),
-    // we assume it's current if today is after the start.
-    return true;
+    // 2. PAST: A cycle is past if today has reached or passed the NEXT cycle's start
+    if (nextCycleDate) {
+      const nextStart = startOfDay(parseISO(nextCycleDate));
+      // If today is NOT before the next start, it means today is >= nextStart
+      if (!isBefore(today, nextStart)) {
+        return CycleStatus.PAST;
+      }
+    }
+
+    // 3. CURRENT: Today is >= cycleStart AND (no next cycle OR today < nextStart)
+    return CycleStatus.CURRENT;
   };
 
   useEffect(() => {
@@ -119,15 +124,6 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
     return years;
   }, [groupedCycleOptions]);
 
-  const subtractOneDay = (dateString?: string): Date => {
-    if (!dateString) {
-      return new Date();
-    }
-    const date = parseISO(dateString);
-    const result = subDays(date, 1);
-    return result;
-  };
-
   return (
     <div className="relative flex h-full w-full overflow-hidden bg-[#F5F5F7] dark:bg-[#000000]">
       {/* HORIZONTAL SCROLL CONTAINER: Set to h-full to capture viewport height */}
@@ -166,17 +162,21 @@ export const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
               {cycleMeta.map((meta, index, arr) => {
                 const cycleData = roadmap.find((r) => r.key === meta.key);
                 if (!cycleData) return null;
-                const nextCycleMeta = index + 1 >= arr.length ? arr[index + 1] : undefined;
-                const nextCycleData = roadmap.find((r) => r.key === nextCycleMeta?.key);
+                // 1. Find the index of THIS cycle in the GLOBAL roadmap array
+                const globalIndex = roadmap.findIndex((r) => r.key === meta.key);
+
+                // 2. Look ahead in the GLOBAL array, not the local monthly 'arr'
+                const nextCycleData = roadmap[globalIndex + 1];
                 const nextCycleDate = nextCycleData?.date;
-                const isCurrentCycle = getIsCurrentCycle(cycleData.date, nextCycleDate);
+
+                const cycleStatus = getCycleStatus(cycleData.date, nextCycleDate);
 
                 return (
                   <div
                     key={cycleData.key}
-                    className={`relative flex h-full w-[432px] flex-col overflow-visible border-r border-black/[0.04] bg-[#F5F5F7] hover:z-50 dark:border-white/5 dark:bg-[#0A0A0B] ${!isCurrentCycle && 'opacity-50'}`}
+                    className={`relative flex h-full w-[432px] flex-col overflow-visible bg-[#F5F5F7] hover:z-50 dark:border-white/5 dark:bg-[#0A0A0B] ${cycleStatus === CycleStatus.FUTURE && 'opacity-50 brightness-50 dark:opacity-50 dark:brightness-50'} ${cycleStatus === CycleStatus.PAST && 'brightness-95 dark:brightness-75'} border-r`}
                   >
-                    <CycleHeader cycleData={cycleData} isCurrentCycle={isCurrentCycle} />
+                    <CycleHeader cycleData={cycleData} cycleStatus={cycleStatus} />
 
                     <TransactionList
                       ref={(el) => {

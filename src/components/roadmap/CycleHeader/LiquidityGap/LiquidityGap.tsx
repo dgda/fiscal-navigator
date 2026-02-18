@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle, ShieldCheck, LucideIcon, EyeClosed } from 'lucide-react';
 import { DEFAULT_HIDDEN_AMOUNT } from '../../../../constants';
+import { CycleStatus } from '../../../../types/roadmap';
 
 interface LiquidityGapProps {
   label: string;
@@ -13,7 +14,7 @@ interface LiquidityGapProps {
   marginLabel: string;
   // Allows for the "faded" look in the Projected version
   isProjected?: boolean;
-  isCurrentCycle?: boolean;
+  cycleStatus: CycleStatus;
 }
 
 const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
@@ -27,18 +28,15 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
     marginValue,
     marginLabel,
     isProjected = false,
-    isCurrentCycle = true,
+    cycleStatus,
   } = props;
-  const Icon: LucideIcon = !isCurrentCycle
-    ? EyeClosed
-    : isForecasting
-      ? AlertTriangle
-      : ShieldCheck;
+  const isFuture = cycleStatus === CycleStatus.FUTURE;
+  const Icon: LucideIcon =
+    isFuture && !isForecasting ? EyeClosed : isForecasting ? AlertTriangle : ShieldCheck;
 
   // Dynamic classes based on state and projection mode
-  const statusColor =
-    !isCurrentCycle && !isForecasting ? 'yellow' : isForecasting ? 'rose' : 'emerald';
-  const opacityClass = !isCurrentCycle ? 'opacity-30' : isProjected ? 'opacity-60' : 'opacity-100';
+  const statusColor = isFuture && !isForecasting ? 'yellow' : isForecasting ? 'rose' : 'emerald';
+  const opacityClass = isFuture ? 'opacity-30' : isProjected ? 'opacity-60' : 'opacity-100';
   const borderOpacity = isProjected ? 'border-opacity-20' : 'border-opacity-100';
 
   const formatCurrency = (val: number) =>
@@ -47,17 +45,60 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
       maximumFractionDigits: 2,
     });
 
+  // 1. Define the status type
+  const status: 'neutral' | 'rose' | 'emerald' =
+    isFuture && !isForecasting ? 'neutral' : isForecasting ? 'rose' : 'emerald';
+
+  // 2. Create a mapping object with FULL class names
+  const statusStyles = {
+    neutral: {
+      text: 'text-neutral-500',
+      textDeep: 'text-neutral-700/90 dark:text-neutral-400/80',
+      textMono: 'text-neutral-700 dark:text-neutral-300',
+      bg: 'bg-neutral-500',
+      bgDeep: 'bg-neutral-500/[0.03] hover:bg-neutral-500/[0.06] dark:bg-neutral-400/[0.02]',
+      border: 'border-neutral-500/15 dark:border-neutral-400/10',
+      dot: 'bg-neutral-500',
+      borderBottom: 'border-neutral-500/5',
+      iconColor: 'text-neutral-500/60',
+    },
+    rose: {
+      text: 'text-rose-500',
+      textDeep: 'text-rose-700/90 dark:text-rose-400/80',
+      textMono: 'text-rose-700 dark:text-rose-300',
+      bg: 'bg-rose-500',
+      bgDeep: 'bg-rose-500/[0.03] hover:bg-rose-500/[0.06] dark:bg-rose-400/[0.02]',
+      border: 'border-rose-500/15 dark:border-rose-400/10',
+      dot: 'bg-rose-500',
+      borderBottom: 'border-rose-500/5',
+      iconColor: 'text-rose-500/60',
+    },
+    emerald: {
+      text: 'text-emerald-500',
+      textDeep: 'text-emerald-700/90 dark:text-emerald-400/80',
+      textMono: 'text-emerald-700 dark:text-emerald-300',
+      bg: 'bg-emerald-500',
+      bgDeep: 'bg-emerald-500/[0.03] hover:bg-emerald-500/[0.06] dark:bg-emerald-400/[0.02]',
+      border: 'border-emerald-500/15 dark:border-emerald-400/10',
+      dot: 'bg-emerald-500',
+      borderBottom: 'border-emerald-500/5',
+      iconColor: 'text-emerald-500/60',
+    },
+  };
+
+  const currentStyles = statusStyles[status];
+
   return (
     <div
-      className={`group relative ${isProjected ? 'mb-2' : 'mb-1 mt-2'} ${!isCurrentCycle && 'cursor-not-allowed'}`}
+      className={`group relative ${isProjected ? 'mb-2' : 'mb-1 mt-2'} ${isFuture && !isForecasting && 'cursor-not-allowed'}`}
     >
       {/* TOOLTIP */}
       <div className="pointer-events-none absolute -top-2 left-1/2 z-[1000] w-max -translate-x-1/2 -translate-y-full scale-95 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
-        {isCurrentCycle && (
+        {(!isFuture || (isFuture && isForecasting)) && (
           <>
             <div className="rounded-2xl border border-black/5 bg-white/90 p-3 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#1C1C1E]/90">
               <div
-                className={`mb-1.5 border-b border-black/5 pb-1 text-[8px] font-black uppercase tracking-widest dark:border-white/5 text-${statusColor}-500`}
+                className={`mb-1.5 border-b border-black/5 pb-1 text-[8px] font-black uppercase tracking-widest dark:border-white/5 ${currentStyles.text}`}
               >
                 {label} {isForecasting ? 'Gap' : 'Surplus'}
               </div>
@@ -94,29 +135,32 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
 
       {/* PILL BAR */}
       <div
-        className={`flex items-center justify-between overflow-hidden rounded-full border border-${statusColor}-500/15 bg-${statusColor}-500/[0.03] py-1.5 pl-2.5 pr-3 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all hover:bg-${statusColor}-500/[0.06] dark:border-${statusColor}-400/10 dark:bg-${statusColor}-400/[0.02] ${opacityClass}`}
+        className={`flex items-center justify-between overflow-hidden rounded-full border py-1.5 pl-2.5 pr-3 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all ${currentStyles.bgDeep} ${opacityClass} ${currentStyles.border}`}
       >
         <div className="flex items-center gap-2">
           <div className="relative flex h-1.5 w-1.5 items-center justify-center">
             <div
-              className={`h-1.5 w-1.5 rounded-full bg-${statusColor}-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]`}
+              className={`h-1.5 w-1.5 rounded-full ${currentStyles.bg} shadow-[0_0_8px_rgba(245,158,11,0.5)]`}
             />
           </div>
           <span
-            className={`text-[10px] font-bold uppercase tracking-[0.06em] text-${statusColor}-700/90 dark:text-${statusColor}-400/80`}
+            className={`text-[10px] font-bold uppercase tracking-[0.06em] ${currentStyles.textDeep}`}
           >
-            {isCurrentCycle && `${label} ${isForecasting ? 'Gap' : 'Surplus'}`}
-            {!isCurrentCycle && 'No Actual Liquidity Yet'}
+            {(!isFuture || (isFuture && isForecasting)) &&
+              `${label} ${isForecasting ? 'Gap' : 'Surplus'}`}
+            {isFuture && !isForecasting && 'No Actual Liquidity Yet'}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <span
-            className={`font-mono text-[11px] font-black tracking-tight text-${statusColor}-700 dark:text-${statusColor}-300`}
+            className={`font-mono text-[11px] font-black tracking-tight ${currentStyles.textMono}`}
           >
             {marginValue < 0 ? '-' : ''}₱
-            {isCurrentCycle ? formatCurrency(Math.abs(marginValue)) : DEFAULT_HIDDEN_AMOUNT}
+            {!isFuture || (isFuture && isForecasting)
+              ? formatCurrency(Math.abs(marginValue))
+              : DEFAULT_HIDDEN_AMOUNT}
           </span>
-          <Icon size={10} strokeWidth={3} className={`text-${statusColor}-500/60`} />
+          <Icon size={10} strokeWidth={3} className={currentStyles.iconColor} />
         </div>
       </div>
     </div>

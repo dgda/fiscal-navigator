@@ -65,3 +65,9 @@ export interface RoadmapData {
   roadmap: RoadmapCycle[];
   bufferDays: number;
 }
+
+export enum CycleStatus {
+  PAST = 'past',
+  CURRENT = 'current',
+  FUTURE = 'future',
+}
