@@ -1,11 +1,5 @@
 import React, { useMemo } from 'react';
-import { Activity, X, ArrowUpRight, Calculator, Target, Info } from 'lucide-react';
-import {
-  CycleStatus,
-  CycleHeaders,
-  GroupedRoadmapTransactions,
-  RoadmapCycle,
-} from '../../../types/roadmap';
+import { GroupedRoadmapTransactions, RoadmapCycle } from '../../../types/roadmap';
 import CycleLedgerProofs from './CycleLedgerProofs/CycleLedgerProofs';
 import PerformanceDeltas from './PerformanceDeltas/PerformanceDeltas';
 import GrandEquation from './GrandEquation/GrandEquation';
