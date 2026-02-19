@@ -32,7 +32,7 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
   } = props;
   const isFuture = cycleStatus === CycleStatus.FUTURE;
   const Icon: LucideIcon =
-    isFuture && !isForecasting ? EyeClosed : isForecasting ? AlertTriangle : ShieldCheck;
+    isFuture && !isProjected ? EyeClosed : isForecasting ? AlertTriangle : ShieldCheck;
 
   const opacityClass = isFuture ? 'opacity-30' : isProjected ? 'opacity-60' : 'opacity-100';
 
@@ -44,7 +44,7 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
 
   // 1. Define the status type
   const status: 'neutral' | 'rose' | 'emerald' =
-    isFuture && !isForecasting ? 'neutral' : isForecasting ? 'rose' : 'emerald';
+    isFuture && !isProjected ? 'neutral' : isForecasting ? 'rose' : 'emerald';
 
   // 2. Create a mapping object with FULL class names
   const statusStyles = {
@@ -87,11 +87,11 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
 
   return (
     <div
-      className={`group relative ${isProjected ? 'mb-2' : 'mb-1 mt-2'} ${isFuture && !isForecasting && 'cursor-not-allowed'}`}
+      className={`group relative ${isProjected ? 'mb-2' : 'mb-1 mt-2'} ${isFuture && !isProjected && 'cursor-not-allowed'}`}
     >
       {/* TOOLTIP */}
       <div className="pointer-events-none absolute -top-2 left-1/2 z-[1000] w-max -translate-x-1/2 -translate-y-full scale-95 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
-        {(!isFuture || (isFuture && isForecasting)) && (
+        {(!isFuture || (isFuture && isProjected)) && (
           <>
             <div className="rounded-2xl border border-black/5 bg-white/90 p-3 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#1C1C1E]/90">
               <div
@@ -143,17 +143,17 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
           <span
             className={`text-[10px] font-bold uppercase tracking-[0.06em] ${currentStyles.textDeep}`}
           >
-            {(!isFuture || (isFuture && isForecasting)) &&
+            {(!isFuture || (isFuture && isProjected)) &&
               `${label} ${isForecasting ? 'Gap' : 'Surplus'}`}
-            {isFuture && !isForecasting && 'No Actual Liquidity Yet'}
+            {isFuture && !isProjected && 'No Actual Liquidity Yet'}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <span
             className={`font-mono text-[11px] font-black tracking-tight ${currentStyles.textMono}`}
           >
-            {marginValue < 0 ? '-' : ''}₱
-            {!isFuture || (isFuture && isForecasting)
+            {!isFuture || (isFuture && isProjected) ? (marginValue < 0 ? '-' : '') : ''}₱
+            {!isFuture || (isFuture && isProjected)
               ? formatCurrency(Math.abs(marginValue))
               : DEFAULT_HIDDEN_AMOUNT}
           </span>
