@@ -74,7 +74,6 @@ const AuditPanel: React.FC<AuditPanelProps> = (props) => {
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* --- HEADER --- */}
         <AuditPanelHeader handleClose={handleClose} activeMonthSummary={activeMonthSummary} />
 
         <div className="no-scrollbar h-[calc(100%-60px)] space-y-5 overflow-y-auto p-5">
@@ -88,27 +87,5 @@ const AuditPanel: React.FC<AuditPanelProps> = (props) => {
     </div>
   );
 };
-
-const ValueRow: React.FC<{ label: string; value: number; math: string; color?: string }> = ({
-  label,
-  value,
-  math,
-  color = 'text-slate-900 dark:text-white',
-}) => (
-  <div className="flex items-center justify-between">
-    <div>
-      <p className="text-[7px] font-extrabold uppercase leading-none text-slate-500 dark:text-slate-400">
-        {label}
-      </p>
-      <p className="mt-1 font-mono text-[6px] font-bold uppercase leading-none text-slate-400 dark:text-slate-500">
-        {math}
-      </p>
-    </div>
-    <p className={`text-[11px] font-black tabular-nums ${color}`}>
-      <span className="mr-0.5 font-light opacity-50">₱</span>
-      {value.toLocaleString()}
-    </p>
-  </div>
-);
 
 export default AuditPanel;
