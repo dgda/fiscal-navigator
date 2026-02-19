@@ -1,5 +1,5 @@
 import { startOfDay, parseISO, isBefore } from 'date-fns';
-import { CycleStatus } from '../../../types/roadmap';
+import { CycleStatus } from '../types/roadmap';
 
 export const getCycleStatus = (date: string, nextCycleDate: string | undefined): CycleStatus => {
   // Use startOfDay for absolute calendar date comparison

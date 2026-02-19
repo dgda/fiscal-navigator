@@ -1,7 +1,6 @@
 import React from 'react';
 import { CycleStatus, LabeledRoadmapTransaction, RoadmapCycle } from '../../../types/roadmap';
 import { Transaction } from '../../../types';
-import { getCycleStatus } from './cycleContentHelpers';
 import CycleHeader from '../CycleHeader/CycleHeader';
 import TransactionList from '../TransactionList/TransactionList';
 
@@ -24,14 +23,7 @@ const CycleContent: React.FC<CycleContentProps> = (props) => {
       {cycleMeta.map((meta) => {
         const cycleData = roadmap.find((r) => r.key === meta.key);
         if (!cycleData) return null;
-        // 1. Find the index of THIS cycle in the GLOBAL roadmap array
-        const globalIndex = roadmap.findIndex((r) => r.key === meta.key);
-
-        // 2. Look ahead in the GLOBAL array, not the local monthly 'arr'
-        const nextCycleData = roadmap[globalIndex + 1];
-        const nextCycleDate = nextCycleData?.date;
-
-        const cycleStatus = getCycleStatus(cycleData.date, nextCycleDate);
+        const { CYCLE_STATUS } = cycleData.headers;
 
         const columnClasses = [
           // Layout & Base
@@ -40,14 +32,14 @@ const CycleContent: React.FC<CycleContentProps> = (props) => {
           'dark:border-white/5 dark:bg-[#0A0A0B]',
 
           // Status: Future
-          cycleStatus === CycleStatus.FUTURE &&
+          CYCLE_STATUS === CycleStatus.FUTURE &&
             'opacity-50 brightness-[0.4] dark:opacity-50 dark:brightness-[0.30]',
 
           // Status: Past
-          cycleStatus === CycleStatus.PAST && 'opacity-65 brightness-[0.95] dark:brightness-95',
+          CYCLE_STATUS === CycleStatus.PAST && 'opacity-65 brightness-[0.95] dark:brightness-95',
 
           // Status: Current
-          cycleStatus === CycleStatus.CURRENT &&
+          CYCLE_STATUS === CycleStatus.CURRENT &&
             'shadow-xl shadow-slate-600/20 dark:shadow-zinc-900/90',
         ]
           .filter(Boolean)
@@ -55,7 +47,7 @@ const CycleContent: React.FC<CycleContentProps> = (props) => {
 
         return (
           <div key={cycleData.key} className={columnClasses}>
-            <CycleHeader cycleData={cycleData} cycleStatus={cycleStatus} />
+            <CycleHeader cycleData={cycleData} />
 
             <TransactionList
               ref={(el) => {

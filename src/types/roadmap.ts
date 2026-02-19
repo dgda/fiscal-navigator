@@ -26,6 +26,7 @@ export interface CycleHeaders {
   UNPAID_IN_CYCLE: number;
   PREV_ACTUAL: number;
   PREV_PROJECTED: number;
+  CYCLE_STATUS: CycleStatus;
 }
 
 /**

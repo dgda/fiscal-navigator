@@ -4,12 +4,11 @@ import { CycleStatus, RoadmapCycle } from '../../../../types/roadmap';
 
 interface BalanceCardsProps {
   cycleData: RoadmapCycle;
-  cycleStatus: CycleStatus;
 }
 
 const BalanceCards: React.FC<BalanceCardsProps> = (props) => {
-  const { cycleData, cycleStatus } = props;
-  const { NET_ACTUAL, NET_PROJECTED, SURPLUS, MARGIN, PREV_ACTUAL, PREV_PROJECTED } =
+  const { cycleData } = props;
+  const { NET_ACTUAL, NET_PROJECTED, SURPLUS, MARGIN, PREV_ACTUAL, PREV_PROJECTED, CYCLE_STATUS } =
     cycleData.headers;
 
   return (
@@ -22,7 +21,7 @@ const BalanceCards: React.FC<BalanceCardsProps> = (props) => {
         prevLabel="Opening Balance"
         flowValue={SURPLUS}
         flowLabel="Cycle Net Flow"
-        cycleStatus={cycleStatus}
+        cycleStatus={CYCLE_STATUS}
       />
 
       <BalanceCard
@@ -33,7 +32,7 @@ const BalanceCards: React.FC<BalanceCardsProps> = (props) => {
         prevLabel="Opening Target"
         flowValue={MARGIN}
         flowLabel="Planned Margin"
-        cycleStatus={cycleStatus}
+        cycleStatus={CYCLE_STATUS}
       />
     </div>
   );

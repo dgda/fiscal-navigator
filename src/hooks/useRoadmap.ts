@@ -12,12 +12,14 @@ import { useTreasury } from '../context/TreasuryContext';
 import { TOTAL_CYCLES, DEFAULT_ANCHOR_DATE, DEFAULT_FIXED_INTERVAL } from '../constants';
 import {
   CycleHeaders,
+  CycleStatus,
   GroupedRoadmapTransactions,
   LabeledRoadmapTransaction,
   RoadmapCycle,
   RoadmapData,
   RoadmapTransaction,
 } from '../types/roadmap';
+import { getCycleStatus } from '../helpers/cycleHelpers';
 
 export interface IUseRoadmap {
   roadmap: RoadmapCycle[];
@@ -148,7 +150,7 @@ export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
     let cumEstimatedExpenses = 0;
 
     // Generate the roadmap array with cycle-specific Reality Checks
-    const roadmap: RoadmapCycle[] = flatOptions.map((opt, index) => {
+    const roadmap: RoadmapCycle[] = flatOptions.map((opt, index, arr) => {
       const cycleTxs = data.transactions.filter((t) => t.cycleKey === opt.key);
       const incTxs = cycleTxs.filter((t) => isOfRoot(t.typeId, 'Income'));
       const expTxs = cycleTxs.filter((t) => isOfRoot(t.typeId, 'Expense'));
@@ -189,6 +191,9 @@ export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
       const unpaidInCycle = estimatedExpenses - actualExpenses;
       const prevActual = cumActualSaved - netFlowActual;
 
+      const nextCycleDate = arr[index + 1]?.date;
+      const cycleStatus: CycleStatus = getCycleStatus(opt.date, nextCycleDate);
+
       const cycleHeaders: CycleHeaders = {
         INFLOW: projectedIncome,
         PLANNED: estimatedExpenses,
@@ -207,6 +212,7 @@ export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
         UNPAID_IN_CYCLE: unpaidInCycle,
         PREV_ACTUAL: prevActual,
         PREV_PROJECTED: prevProjected,
+        CYCLE_STATUS: cycleStatus,
       };
 
       return {

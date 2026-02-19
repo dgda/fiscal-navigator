@@ -7,11 +7,10 @@ import CycleTitle from './CycleTitle/CycleTitle';
 
 export interface CycleHeaderProps {
   cycleData: RoadmapCycle;
-  cycleStatus: CycleStatus;
 }
 
 const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
-  const { cycleData, cycleStatus } = props;
+  const { cycleData } = props;
   const {
     NET_ACTUAL,
     PREV_PROJECTED,
@@ -21,13 +20,14 @@ const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
     PLANNED,
     IS_FORECASTING,
     IS_PROJECTED_FORECASTING,
+    CYCLE_STATUS,
   } = cycleData.headers;
 
   return (
     <div className="group/cycle relative z-[10] shrink-0 border-b border-black/[0.04] px-4 py-4 backdrop-blur-xl transition-all hover:z-[50] dark:border-white/5">
-      <CycleTitle cycleData={cycleData} cycleStatus={cycleStatus} />
+      <CycleTitle cycleData={cycleData} />
 
-      <BalanceCards cycleData={cycleData} cycleStatus={cycleStatus} />
+      <BalanceCards cycleData={cycleData} />
 
       {/* ACTUAL STATUS */}
       <LiquidityGapIndicator
@@ -39,7 +39,7 @@ const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
         comparisonLabel="Unpaid Planned Bills"
         marginValue={REALITY_CHECK}
         marginLabel="Survival Margin"
-        cycleStatus={cycleStatus}
+        cycleStatus={CYCLE_STATUS}
       />
 
       {/* PROJECTED STATUS */}
@@ -53,7 +53,7 @@ const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
         comparisonLabel="Planned Bills"
         marginValue={PROJECTED_CHECK}
         marginLabel="Projected Survival Margin"
-        cycleStatus={cycleStatus}
+        cycleStatus={CYCLE_STATUS}
       />
       <CycleMetricPills cycleHeaders={cycleData.headers} />
     </div>

@@ -4,13 +4,12 @@ import { CycleStatus, RoadmapCycle } from '../../../../types/roadmap';
 
 interface CycleTitleProps {
   cycleData: RoadmapCycle;
-  cycleStatus: CycleStatus;
 }
 
 const CycleTitle: React.FC<CycleTitleProps> = (props) => {
-  const { cycleData, cycleStatus } = props;
+  const { cycleData } = props;
   const { dateLabel, display, headers } = cycleData;
-  const { LIQUIDITY_RUNWAY, PROJECTED_LIQUIDITY_RUNWAY } = headers;
+  const { LIQUIDITY_RUNWAY, PROJECTED_LIQUIDITY_RUNWAY, CYCLE_STATUS } = headers;
 
   return (
     <div className="mb-4 flex items-center justify-between">
@@ -23,7 +22,7 @@ const CycleTitle: React.FC<CycleTitleProps> = (props) => {
         <MetricBadges
           liquidityRunway={LIQUIDITY_RUNWAY}
           projectedLiquidityRunway={PROJECTED_LIQUIDITY_RUNWAY}
-          cycleStatus={cycleStatus}
+          cycleStatus={CYCLE_STATUS}
         />
 
         {/* Date Tag stays in the header as it is identity-specific */}
