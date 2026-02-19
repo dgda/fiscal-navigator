@@ -6,6 +6,7 @@ import {
   GroupedRoadmapTransactions,
   RoadmapCycle,
 } from '../../../types/roadmap';
+import CycleLedgerProofs from './CycleLedgerProofs/CycleLedgerProofs';
 
 interface AuditPanelProps {
   activeMonthSummary: string | null;
@@ -195,53 +196,7 @@ const AuditPanel: React.FC<AuditPanelProps> = ({
             </div>
           </div>
 
-          {/* --- PER-CYCLE MATH PROOF --- */}
-          <div className="space-y-3">
-            <h3 className="px-1 text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-              Cycle Ledger Proofs
-            </h3>
-            <div className="space-y-2">
-              {monthData.cycles.map((cycle) => (
-                <div
-                  key={cycle.key}
-                  className="rounded-2xl border border-black/[0.04] bg-white/60 p-4 shadow-sm dark:border-white/5 dark:bg-white/[0.02]"
-                >
-                  <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`h-1.5 w-1.5 rounded-full ${cycle.headers.CYCLE_STATUS === CycleStatus.CURRENT ? 'animate-pulse bg-blue-500' : 'bg-slate-300 dark:bg-slate-600'}`}
-                      />
-                      <span className="text-[11px] font-black uppercase tracking-tight text-slate-900 dark:text-white">
-                        {cycle.display}
-                      </span>
-                    </div>
-                    <span className="font-mono text-[8px] font-bold text-slate-500 dark:text-slate-400">
-                      {cycle.dateLabel}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <CycleMath
-                      label="Actual Surplus"
-                      val1={cycle.headers.INFLOW}
-                      val2={cycle.headers.CLEARED}
-                      result={cycle.headers.SURPLUS}
-                      sign="−"
-                      color="emerald"
-                    />
-                    <CycleMath
-                      label="Projected Margin"
-                      val1={cycle.headers.INFLOW}
-                      val2={cycle.headers.PLANNED}
-                      result={cycle.headers.MARGIN}
-                      sign="−"
-                      color="blue"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <CycleLedgerProofs monthData={monthData} />
         </div>
       </div>
     </div>
@@ -326,32 +281,5 @@ const DeltaModule: React.FC<{
     </div>
   );
 };
-
-const CycleMath: React.FC<{
-  label: string;
-  val1: number;
-  val2: number;
-  result: number;
-  sign: string;
-  color: string;
-}> = ({ label, val1, val2, result, sign, color }) => (
-  <div>
-    <p className="mb-1.5 text-[7px] font-extrabold uppercase text-slate-500 dark:text-slate-400">
-      {label}
-    </p>
-    <div className="flex items-center gap-1 font-mono text-[9px] font-bold text-slate-600 dark:text-slate-400">
-      <span>₱{(val1 / 1000).toFixed(1)}k</span>
-      <span className="font-black text-slate-400 dark:text-slate-500">{sign}</span>
-      <span>{(val2 / 1000).toFixed(1)}k</span>
-    </div>
-    <p
-      className={`mt-0.5 text-[11px] font-black tabular-nums text-${color}-600 dark:text-${color}-500`}
-    >
-      <span className="mr-0.5 text-[9px] font-bold opacity-70">=</span>
-      <span className="mr-0.5 text-[9px] font-light opacity-50">₱</span>
-      {result.toLocaleString()}
-    </p>
-  </div>
-);
 
 export default AuditPanel;
