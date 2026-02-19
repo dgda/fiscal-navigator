@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { TreasuryData, Transaction, Account, PayoutConfig, UserPreferences } from '../types';
+import { API_URL } from '../constants';
 
 interface TreasuryContextType {
   data: TreasuryData;
@@ -28,7 +29,7 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Initial Fetch
   useEffect(() => {
-    fetch('http://localhost:3001/api/data')
+    fetch(`${API_URL}/api/data`)
       .then((res) => res.json())
       .then((d) => {
         setData(d);
@@ -44,7 +45,7 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const sync = useCallback(async (newData: TreasuryData) => {
     setData(newData); // Optimistic Update
     try {
-      await fetch('http://localhost:3001/api/update', {
+      await fetch(`${API_URL}/api/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newData),

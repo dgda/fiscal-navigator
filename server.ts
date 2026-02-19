@@ -74,6 +74,6 @@ app.post('/api/update', async (req, res) => {
   res.json({ success: true });
 });
 
-app.listen(3001, () => {
-  console.log('🏛️  Treasury OS Core: http://localhost:3001');
+app.listen(3001, '0.0.0.0', () => {
+  console.log('🏛️  Treasury OS Core: http://0.0.0.0:3001');
 });
