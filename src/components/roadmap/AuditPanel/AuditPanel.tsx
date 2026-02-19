@@ -8,6 +8,8 @@ import {
 } from '../../../types/roadmap';
 import CycleLedgerProofs from './CycleLedgerProofs/CycleLedgerProofs';
 import PerformanceDeltas from './PerformanceDeltas/PerformanceDeltas';
+import GrandEquation from './GrandEquation/GrandEquation';
+import AuditPanelHeader from './AuditPanelHeader';
 
 interface AuditPanelProps {
   activeMonthSummary: string | null;
@@ -18,14 +20,10 @@ interface AuditPanelProps {
   roadmap: RoadmapCycle[];
 }
 
-const AuditPanel: React.FC<AuditPanelProps> = ({
-  activeMonthSummary,
-  isOpening,
-  isClosing,
-  handleClose,
-  groupedCycleOptions,
-  roadmap,
-}) => {
+const AuditPanel: React.FC<AuditPanelProps> = (props) => {
+  const { activeMonthSummary, isOpening, isClosing, handleClose, groupedCycleOptions, roadmap } =
+    props;
+
   const monthData = useMemo(() => {
     if (!activeMonthSummary || !groupedCycleOptions[activeMonthSummary]) return null;
 
@@ -83,91 +81,10 @@ const AuditPanel: React.FC<AuditPanelProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* --- HEADER --- */}
-        <div className="flex items-center justify-between border-b border-black/[0.05] px-6 py-4 dark:border-white/[0.05]">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-white dark:text-black">
-              <Calculator size={14} />
-            </div>
-            <div>
-              <h2 className="text-[12px] font-black uppercase tracking-tight text-slate-900 dark:text-white">
-                {activeMonthSummary}
-              </h2>
-              <p className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                Ledger Intelligence Audit
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleClose}
-            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
-          >
-            <X size={16} />
-          </button>
-        </div>
+        <AuditPanelHeader handleClose={handleClose} activeMonthSummary={activeMonthSummary} />
 
         <div className="no-scrollbar h-[calc(100%-60px)] space-y-5 overflow-y-auto p-5">
-          {/* --- THE GRAND EQUATION --- */}
-          <div className="relative overflow-hidden rounded-3xl border border-black/[0.03] bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/[0.02]">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Target size={12} className="text-blue-600" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-slate-800 dark:text-white">
-                  Liquidity Resolution
-                </span>
-              </div>
-              <span className="font-mono text-[7px] font-bold uppercase text-slate-500 dark:text-slate-400">
-                Method: Recursive Balance Summation
-              </span>
-            </div>
-
-            <div className="relative grid grid-cols-2 gap-8">
-              <div className="absolute bottom-0 left-1/2 top-0 w-[1px] -translate-x-1/2 bg-slate-100 dark:bg-white/10" />
-
-              {/* Reality Track */}
-              <div className="space-y-3">
-                <p className="text-[8px] font-black uppercase tracking-tighter text-slate-500 dark:text-slate-400">
-                  Simulation (Actuals)
-                </p>
-                <ValueRow label="Start" value={monthData.start} math="Initial" />
-                <ValueRow
-                  label="Δ Surplus"
-                  value={monthData.totals.actualSurplus}
-                  math="Σ(In-Out)"
-                  color="text-emerald-600 dark:text-emerald-500"
-                />
-                <div className="border-t border-slate-100 pt-2 dark:border-white/10">
-                  <p className="text-[7px] font-extrabold uppercase text-slate-500 dark:text-slate-400">
-                    Reality Check
-                  </p>
-                  <p className="text-lg font-black tabular-nums text-slate-900 dark:text-white">
-                    ₱{monthData.endActual.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-
-              {/* Forecast Track */}
-              <div className="space-y-3">
-                <p className="text-[8px] font-black uppercase tracking-tighter text-blue-600 dark:text-blue-500/80">
-                  Forecast (Projections)
-                </p>
-                <ValueRow label="Start" value={monthData.start} math="Initial" />
-                <ValueRow
-                  label="Δ Margin"
-                  value={monthData.totals.projectedMargin}
-                  math="Σ(Proj-Est)"
-                  color="text-blue-600 dark:text-blue-400"
-                />
-                <div className="border-t border-slate-100 pt-2 dark:border-white/10">
-                  <p className="text-[7px] font-extrabold uppercase text-slate-500 dark:text-slate-400">
-                    Projected Final
-                  </p>
-                  <p className="text-lg font-black tabular-nums text-blue-700 dark:text-blue-400">
-                    ₱{monthData.endProjected.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <GrandEquation monthData={monthData} />
 
           <PerformanceDeltas monthData={monthData} />
 
