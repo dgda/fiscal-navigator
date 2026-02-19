@@ -196,6 +196,7 @@ export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
 
       const cycleHeaders: CycleHeaders = {
         INFLOW: projectedIncome,
+        ACTUAL_INFLOW: actualIncome,
         PLANNED: estimatedExpenses,
         CLEARED: actualExpenses,
         MARGIN: netFlowProjected,

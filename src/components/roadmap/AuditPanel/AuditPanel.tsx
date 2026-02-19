@@ -39,12 +39,20 @@ const AuditPanel: React.FC<AuditPanelProps> = ({
     const totals = cycles.reduce(
       (acc, c) => ({
         projInflow: acc.projInflow + (c.headers.INFLOW || 0),
+        actualInflow: acc.actualInflow + (c.headers.ACTUAL_INFLOW || 0),
         actualOutflow: acc.actualOutflow + (c.headers.CLEARED || 0),
         plannedOutflow: acc.plannedOutflow + (c.headers.PLANNED || 0),
         actualSurplus: acc.actualSurplus + (c.headers.SURPLUS || 0),
         projectedMargin: acc.projectedMargin + (c.headers.MARGIN || 0),
       }),
-      { projInflow: 0, actualOutflow: 0, plannedOutflow: 0, actualSurplus: 0, projectedMargin: 0 },
+      {
+        projInflow: 0,
+        actualInflow: 0,
+        actualOutflow: 0,
+        plannedOutflow: 0,
+        actualSurplus: 0,
+        projectedMargin: 0,
+      },
     );
 
     return {
@@ -173,7 +181,7 @@ const AuditPanel: React.FC<AuditPanelProps> = ({
             <div className="grid grid-cols-1 gap-2">
               <DeltaModule
                 title="Inflow Performance"
-                actual={monthData.totals.projInflow}
+                actual={monthData.totals.actualInflow}
                 projected={monthData.totals.projInflow}
                 formula="Projected Base Salary + Cycle Income"
               />

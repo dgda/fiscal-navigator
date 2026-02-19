@@ -10,6 +10,7 @@ export type AbsoluteSequence = 'A' | 'B';
  */
 export interface CycleHeaders {
   INFLOW: number;
+  ACTUAL_INFLOW: number;
   PLANNED: number;
   CLEARED: number;
   MARGIN: number;
