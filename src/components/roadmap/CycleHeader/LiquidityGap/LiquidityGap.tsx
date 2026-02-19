@@ -34,10 +34,7 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
   const Icon: LucideIcon =
     isFuture && !isForecasting ? EyeClosed : isForecasting ? AlertTriangle : ShieldCheck;
 
-  // Dynamic classes based on state and projection mode
-  const statusColor = isFuture && !isForecasting ? 'yellow' : isForecasting ? 'rose' : 'emerald';
   const opacityClass = isFuture ? 'opacity-30' : isProjected ? 'opacity-60' : 'opacity-100';
-  const borderOpacity = isProjected ? 'border-opacity-20' : 'border-opacity-100';
 
   const formatCurrency = (val: number) =>
     val.toLocaleString(undefined, {

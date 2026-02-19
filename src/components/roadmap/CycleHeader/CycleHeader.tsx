@@ -14,11 +14,7 @@ const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
   const { cycleData, cycleStatus } = props;
   const {
     NET_ACTUAL,
-    PREV_ACTUAL,
-    NET_PROJECTED,
     PREV_PROJECTED,
-    SURPLUS,
-    MARGIN,
     UNPAID_IN_CYCLE,
     REALITY_CHECK,
     PROJECTED_CHECK,

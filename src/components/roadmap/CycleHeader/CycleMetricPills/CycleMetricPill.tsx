@@ -11,6 +11,7 @@ export interface CycleMetricPillsProps {
 
 const CycleMetricPill: React.FC<CycleMetricPillsProps> = (props) => {
   const { label, value, icon: Icon, colorClass, valueColorClass, tooltipContent } = props;
+
   return (
     <div
       className={`group relative flex min-w-0 flex-1 flex-col justify-center rounded-xl border px-2 py-1.5 ${colorClass} transition-all duration-300`}
