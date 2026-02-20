@@ -143,7 +143,7 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       .map((t) => (
         <React.Fragment key={t.id}>
           <option value={t.id}>
-            {'\u00A0'.repeat(depth * 3)} {t.name}
+            {'\u00A0'.repeat(depth * 3)} ↳ {t.name}
           </option>
           {renderTypeOptions(t.id, depth + 1)}
         </React.Fragment>
