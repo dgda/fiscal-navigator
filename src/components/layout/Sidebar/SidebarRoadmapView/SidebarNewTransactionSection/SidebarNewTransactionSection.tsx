@@ -120,7 +120,8 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
           id: crypto.randomUUID(),
           name: `Fee: ${primaryTx.name}`,
           amount: feeAmount,
-          typeId: data.types.find((t) => t.name === 'Expense')?.id || selectedTypeId,
+          typeId: data.types.find((t) => t.name === 'Expense')?.id || 't2',
+          toAccountId: undefined,
           history: [{ snapshot: {}, timestamp: now, label: `Linked Fee` }],
         });
       }
