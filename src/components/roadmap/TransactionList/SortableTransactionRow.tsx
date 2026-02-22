@@ -35,6 +35,11 @@ const SortableTransactionRow = (props: SortableTransactionRowProps) => {
   const isTransfer = checkIsTransfer(tx.typeId);
   const account = computedAccounts?.find((acc: Account) => tx.accountId === acc.id);
 
+  let toAccount: Account | undefined = undefined;
+  if (tx.toAccountId) {
+    toAccount = computedAccounts?.find((acc: Account) => tx.toAccountId === acc.id);
+  }
+
   const getAccentBg = () => {
     if (isIncome) return tx.isPaid ? 'bg-emerald-500' : 'bg-emerald-500/20';
     if (isTransfer) return tx.isPaid ? 'bg-violet-500' : 'bg-violet-500/20';
@@ -128,7 +133,7 @@ const SortableTransactionRow = (props: SortableTransactionRowProps) => {
               <span
                 className={`shrink-0 font-mono text-[8px] font-normal tracking-tighter ${getMetadataColor()}`}
               >
-                {account?.name || 'Unassigned Account'}
+                {account?.name || 'Unassigned Account'} {isTransfer && `→ ${toAccount?.name}`}
               </span>
             </div>
           </div>
