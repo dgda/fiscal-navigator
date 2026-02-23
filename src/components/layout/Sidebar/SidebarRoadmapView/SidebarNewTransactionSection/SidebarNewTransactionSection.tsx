@@ -53,8 +53,20 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
     onCommitSuccess,
     selectChevron,
   } = props;
-  const { data, sync, checkIsTransfer, computedAccounts, renderTypeOptions } = useTreasury();
-  const { groupedCycleOptions, masterCycles } = useRoadmap({
+
+  // Added requestReconcile and checkIsIncome from TreasuryContext
+  const {
+    data,
+    sync,
+    checkIsTransfer,
+    checkIsIncome,
+    computedAccounts,
+    renderTypeOptions,
+    requestReconcile,
+  } = useTreasury();
+
+  // Added roadmap from useRoadmap to check financial health
+  const { groupedCycleOptions, masterCycles, roadmap } = useRoadmap({
     mode: filterMode,
     year: filterYear,
     month: filterMonth,
@@ -81,10 +93,11 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
     if (!isPlanned) setIsPaid(true);
   }, [isPlanned]);
 
-  const handleCommit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleCommit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const f = new FormData(e.currentTarget);
+      const formElement = e.currentTarget; // Capture ref for resetting later
       const now = new Date().toISOString();
       const userDate = f.get('transactionDate') as string;
       const anchorDate = new Date(userDate);
@@ -127,12 +140,9 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
       }
 
       if (isRecurring) {
-        // Helper to calculate the next occurrence based on frequency unit
         const getNextOccurrence = (d: Date) => {
           if (recurrenceUnit === 'days') return addDays(d, recurrenceInterval);
           if (recurrenceUnit === 'weeks') return addWeeks(d, recurrenceInterval);
-
-          // Monthly logic with day-of-month persistence (e.g., 31st becomes 30th/28th)
           const nextMonth = addMonths(d, recurrenceInterval);
           const lastDay = lastDayOfMonth(nextMonth).getDate();
           const targetDay = dayOfMonth > lastDay ? lastDay : dayOfMonth;
@@ -147,9 +157,6 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
           format(currentPointer, 'yyyy-MM-dd') === format(endPointer, 'yyyy-MM-dd')
         ) {
           const occurrenceDate = currentPointer;
-
-          // SMART CYCLE DETERMINATION:
-          // Finds the latest cycle such that cycleDate <= occurrenceDate
           const targetCycle = masterCycles
             .filter(
               (c) =>
@@ -173,16 +180,47 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
         }
       }
 
-      sync({ ...data, transactions: [...data.transactions, ...batch] });
-      onCommitSuccess(primaryId);
-      (e.target as HTMLFormElement).reset();
-      setSelectedTypeId('');
-      setIsPlanned(false);
-      setIsPaid(true);
-      setIsRecurring(false);
-      setRecurrenceInterval(1);
-      setRecurrenceUnit(RecurrenceUnit.MONTHS);
-      transactionNameInputRef?.current?.focus();
+      // --- LIQUIDITY GUARD LOGIC ---
+      const targetCycleFinancials = roadmap.find((r) => r.key === baseCycleKey);
+      const currentNet = targetCycleFinancials?.headers.NET_PROJECTED || 0;
+      const isIncome = checkIsIncome(selectedTypeId);
+      const isTransfer = checkIsTransfer(selectedTypeId);
+
+      // Calculate total impact of this transaction (including its fee if in the same cycle)
+      const cycleImpact = batch
+        .filter((tx) => tx.cycleKey === baseCycleKey)
+        .reduce((sum, tx) => sum + tx.amount, 0);
+
+      const projectedAfter = currentNet - cycleImpact;
+
+      const finalizeSync = (txList: Transaction[]) => {
+        sync({ ...data, transactions: [...txList, ...batch] });
+        onCommitSuccess(primaryId);
+        formElement.reset();
+        setSelectedTypeId('');
+        setIsPlanned(false);
+        setIsPaid(true);
+        setIsRecurring(false);
+        setRecurrenceInterval(1);
+        setRecurrenceUnit(RecurrenceUnit.MONTHS);
+        transactionNameInputRef?.current?.focus();
+      };
+
+      // Trigger reconciliation if balance becomes negative (and it's not income/transfer)
+      if (!isIncome && !isTransfer && projectedAfter < 0) {
+        requestReconcile(
+          Math.abs(projectedAfter),
+          baseCycleKey,
+          (_adjustments, updatedTransactions) => {
+            // CRITICAL: Use the freshly adjusted transactions list provided by the modal
+            finalizeSync(updatedTransactions);
+          },
+        );
+        return;
+      }
+
+      // Otherwise, proceed immediately with the current transaction list
+      finalizeSync(data.transactions);
     } catch (err) {
       console.error('Commit Failed', err);
     }
@@ -398,7 +436,6 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
 
           {isRecurring && (
             <div className="animate-in slide-in-from-top-2 space-y-3 bg-purple-50/30 px-3.5 py-4 dark:bg-purple-900/10">
-              {/* NEW: RECURRENCE FREQUENCY CONTROLS */}
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600/70 dark:text-purple-400/70">
                   Frequency

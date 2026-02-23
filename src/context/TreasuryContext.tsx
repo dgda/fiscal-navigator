@@ -19,6 +19,18 @@ interface TreasuryContextType {
   deleteSeries: (groupId: string) => void;
   breakSeriesLink: (id: string) => void;
   toggleExecution: (id: string) => void;
+  // Reconciliation Global State
+  reconcileRequest: {
+    shortfall: number;
+    cycleKey: string;
+    onSuccess: (adjustments: Record<string, number>, updatedTransactions: Transaction[]) => void;
+  } | null;
+  requestReconcile: (
+    shortfall: number,
+    cycleKey: string,
+    onSuccess: (adjustments: Record<string, number>, updatedTransactions: Transaction[]) => void,
+  ) => void;
+  clearReconcileRequest: () => void;
 }
 
 const TreasuryContext = createContext<TreasuryContextType | null>(null);
@@ -26,6 +38,28 @@ const TreasuryContext = createContext<TreasuryContextType | null>(null);
 export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<TreasuryData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Reconciliation Global State
+  const [reconcileRequest, setReconcileRequest] = useState<{
+    shortfall: number;
+    cycleKey: string;
+    onSuccess: (adjustments: Record<string, number>, updatedTransactions: Transaction[]) => void;
+  } | null>(null);
+
+  const requestReconcile = useCallback(
+    (
+      shortfall: number,
+      cycleKey: string,
+      onSuccess: (adjustments: Record<string, number>, updatedTransactions: Transaction[]) => void,
+    ) => {
+      setReconcileRequest({ shortfall, cycleKey, onSuccess });
+    },
+    [],
+  );
+
+  const clearReconcileRequest = useCallback(() => {
+    setReconcileRequest(null);
+  }, []);
 
   // Initial Fetch
   useEffect(() => {
@@ -193,16 +227,10 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     sync({ ...data, transactions: nextTxs });
   };
 
-  /**
-   * FIXED: updateSeries
-   * Destructures baseUpdates to ensure we DON'T propagate time/identity fields
-   * across the whole series.
-   */
   const updateSeries = (groupId: string, baseUpdates: Partial<Transaction>, msg: string) => {
     if (!data) return;
     const now = new Date().toISOString();
 
-    // 1. Remove fields that should NEVER be synced across a series from the updates object
     const {
       id: _id,
       date: _date,
@@ -213,7 +241,6 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } = baseUpdates;
 
     const nextTxs = data.transactions.map((t) => {
-      // Only update transactions in the group that haven't been paid yet
       if (t.recurringGroupId !== groupId || t.isPaid) return t;
 
       const snapshot = { ...t };
@@ -222,7 +249,7 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       return {
         ...t,
-        ...safeUpdates, // Only apply safe fields (amount, name, type, account, etc.)
+        ...safeUpdates,
         updated_at: now,
         history: [...t.history, { snapshot, timestamp: now, label: msg }],
       };
@@ -274,6 +301,9 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         deleteSeries,
         breakSeriesLink,
         toggleExecution,
+        reconcileRequest,
+        requestReconcile,
+        clearReconcileRequest,
       }}
     >
       {children}
