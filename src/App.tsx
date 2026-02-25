@@ -10,27 +10,23 @@ import { FilterMode, UseRoadmapProps } from './hooks/useRoadmap';
 import { ThemeProvider } from './context/ThemeContext';
 
 const AppContent: React.FC = () => {
-  const { data, sync, reconcileRequest, clearReconcileRequest } = useTreasury();
+  const { data, reconcileRequest, clearReconcileRequest } = useTreasury();
 
-  // 1. TEMPORAL SCOPE STATE
   const [filter, setFilter] = useState<UseRoadmapProps>({
     mode: FilterMode.ALL,
     year: new Date().getFullYear(),
     month: new Date().getMonth(),
   });
-
-  // 2. UI VISIBILITY STATE
   const [activeView, setActiveView] = useState<'roadmap' | 'settings'>('roadmap');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  // 3. INTERACTION STATE
   const [editingId, setEditingId] = useState<string | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
 
   const handleReconcileConfirm = (adjustments: Record<string, number>) => {
-    if (!reconcileRequest || !data) return;
+    if (!reconcileRequest || !data) {
+      return;
+    }
 
-    // 1. Generate the updated ledger with subtractions
     const updatedLedger = data.transactions.map((t) => {
       if (adjustments[t.id]) {
         return {
@@ -49,15 +45,12 @@ const AppContent: React.FC = () => {
       return t;
     });
 
-    // 2. Pass BOTH the adjustments and the full updatedLedger to the callback
-    // This allows the Sidebar to include these changes in its final sync
     reconcileRequest.onSuccess(adjustments, updatedLedger);
     clearReconcileRequest();
   };
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-100 dark:bg-[#0A0A0B]">
-      {/* TOP HUD: Restored with live account balances */}
       <Navbar activeView={activeView} setActiveView={setActiveView} />
 
       <div className="flex flex-1 overflow-hidden">
@@ -75,7 +68,6 @@ const AppContent: React.FC = () => {
           onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
 
-        {/* MAIN LEDGER SPACE */}
         <main className="relative flex flex-1 flex-col overflow-hidden">
           {activeView === 'roadmap' ? (
             <RoadmapSpreadsheet
@@ -90,12 +82,10 @@ const AppContent: React.FC = () => {
         </main>
       </div>
 
-      {/*  macOS EDIT MODAL: Series & Standalone support */}
       {editingId && (
         <TransactionEditModal transactionId={editingId} onClose={() => setEditingId(null)} />
       )}
 
-      {/* GLOBAL RECONCILIATION MODAL: Blurs entire viewport */}
       {reconcileRequest && (
         <BalanceReconciliationModal
           isOpen={true}
