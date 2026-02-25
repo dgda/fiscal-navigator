@@ -7,6 +7,7 @@ interface BalanceReconciliationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (adjustments: Record<string, number>) => void;
+  onSkip?: () => void;
   cycleKey: string;
   shortfallAmount: number;
   unpaidTransactions: Transaction[];
@@ -19,6 +20,7 @@ export const BalanceReconciliationModal: React.FC<BalanceReconciliationModalProp
   cycleKey,
   shortfallAmount,
   unpaidTransactions,
+  onSkip,
 }) => {
   const [adjustments, setAdjustments] = useState<Record<string, number>>({});
 
@@ -140,6 +142,12 @@ export const BalanceReconciliationModal: React.FC<BalanceReconciliationModalProp
             className="px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
           >
             Cancel
+          </button>
+          <button
+            onClick={onSkip}
+            className="px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+          >
+            Ignore & Proceed
           </button>
           <button
             disabled={remainingShortfall > 0.01}

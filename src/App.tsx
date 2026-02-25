@@ -106,6 +106,10 @@ const AppContent: React.FC = () => {
           unpaidTransactions={data.transactions.filter(
             (t) => t.cycleKey === reconcileRequest.cycleKey && !t.isPaid,
           )}
+          onSkip={() => {
+            reconcileRequest.onSuccess({}, data.transactions);
+            clearReconcileRequest();
+          }}
         />
       )}
     </div>
