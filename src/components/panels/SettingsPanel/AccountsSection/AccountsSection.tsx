@@ -2,6 +2,7 @@ import React from 'react';
 import { Account, TransactionType, TreasuryData } from '../../../../types';
 import { useTreasury } from '../../../../context/TreasuryContext';
 import { Activity, Edit3, Plus, Trash2, Wallet } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 interface AccountsSectionProps {
   sectionClass: string;
@@ -64,7 +65,7 @@ const AccountsSection: React.FC<AccountsSectionProps> = (props) => {
               accounts: [
                 ...data.accounts,
                 {
-                  id: crypto.randomUUID(),
+                  id: uuidv4(),
                   name: f.get('name') as string,
                   color: f.get('color') as string,
                   startingBalance: Number(f.get('startingBalance')),

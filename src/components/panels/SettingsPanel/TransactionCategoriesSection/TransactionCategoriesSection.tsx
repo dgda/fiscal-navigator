@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Account, TransactionType, TreasuryData } from '../../../../types';
 import { useTreasury } from '../../../../context/TreasuryContext';
 import { ChevronRight, Edit3, Trash2, Layers, Plus } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 interface TransactionCategoriesSectionProps {
   sectionClass: string;
@@ -163,7 +164,7 @@ const TransactionCategoriesSection: React.FC<TransactionCategoriesSectionProps> 
               types: [
                 ...data.types,
                 {
-                  id: crypto.randomUUID(),
+                  id: uuidv4(),
                   name: f.get('name') as string,
                   parent_type: (f.get('parent_type') as string) || null,
                 },

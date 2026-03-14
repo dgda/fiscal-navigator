@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 
 db.json
+
+package-lock.json
+
+/app/data
+/app/data/db.json

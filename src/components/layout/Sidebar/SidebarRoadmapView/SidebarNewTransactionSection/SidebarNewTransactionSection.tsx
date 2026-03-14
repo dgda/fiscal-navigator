@@ -1,4 +1,4 @@
-import React, { JSX, useEffect, useMemo, useRef, useState } from 'react';
+import React, { JSX, useMemo, useRef, useState } from 'react';
 import { useTreasury } from '../../../../../context/TreasuryContext';
 import {
   addDays,
@@ -26,6 +26,7 @@ import {
   ShieldCheck,
   Repeat,
 } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 interface SidebarNewTransactionSectionProps {
   inputBaseClass: string;
@@ -89,10 +90,6 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
     return [...masterCycles].reverse().find((c) => !isAfter(parseISO(c.date), today))?.key || '';
   }, [masterCycles]);
 
-  useEffect(() => {
-    if (!isPlanned) setIsPaid(true);
-  }, [isPlanned]);
-
   const handleCommit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -104,8 +101,8 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
       const dayOfMonth = anchorDate.getDate();
       const feeAmount = Number(f.get('feeAmount')) || 0;
       const baseCycleKey = f.get('cycleKey') as string;
-      const primaryId = crypto.randomUUID();
-      const recurringGroupId = isRecurring ? crypto.randomUUID() : undefined;
+      const primaryId = uuidv4();
+      const recurringGroupId = isRecurring ? uuidv4() : undefined;
 
       const primaryTx: Transaction = {
         id: primaryId,
@@ -125,12 +122,12 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
         updated_at: now,
       };
 
-      let batch = [primaryTx];
+      const batch = [primaryTx];
 
       if (feeAmount > 0) {
         batch.push({
           ...primaryTx,
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           name: `Fee: ${primaryTx.name}`,
           amount: feeAmount,
           typeId: data.types.find((t) => t.name === 'Expense')?.id || 't2',
@@ -168,7 +165,7 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
           if (targetCycle) {
             batch.push({
               ...primaryTx,
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               date: occurrenceDate.toISOString(),
               cycleKey: targetCycle.key,
               isPlanned: true,
@@ -392,7 +389,14 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
               type="checkbox"
               className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
               checked={isPlanned}
-              onChange={(e) => setIsPlanned(e.target.checked)}
+              onChange={(e) => {
+                const nextValue = e.target.checked;
+                setIsPlanned(nextValue);
+
+                if (!nextValue) {
+                  setIsPaid(true);
+                }
+              }}
             />
           </label>
           <div className="h-[1px] bg-slate-100 pl-12 dark:bg-white/5"></div>

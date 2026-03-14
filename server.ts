@@ -2,12 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import { JSONFilePreset } from 'lowdb/node';
 import { TreasuryData } from './src/types';
+import path from 'path';
 
 const app = express();
 app.use(express.json({ limit: '100mb' })); // Increase to 100mb
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
-// @ts-expect-error
-app.use((err, req, res, next) => {
+// @ts-expect-error no types
+app.use((err, _req, _res, next) => {
   if (err.type === 'entity.too.large') {
     console.error('Payload Limit Exceeded!');
     console.error('Limit set to:', err.limit);
@@ -49,7 +50,8 @@ const defaultData: TreasuryData = {
 };
 
 // Initialize DB
-const db = await JSONFilePreset<TreasuryData>('db.json', defaultData);
+
+const db = await JSONFilePreset<TreasuryData>('/app/data/db.json', defaultData);
 
 // --- MIGRATION: Ensure preferences object exists for older DBs ---
 if (!db.data.preferences) {
@@ -72,6 +74,13 @@ app.post('/api/update', async (req, res) => {
   db.data = req.body;
   await db.write();
   res.json({ success: true });
+});
+
+const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, 'dist')));
+
+app.get('*any', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(3001, '0.0.0.0', () => {

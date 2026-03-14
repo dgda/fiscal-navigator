@@ -9,7 +9,8 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "docker build -t dgabrielablay/fiscal-navigator:latest . && docker push dgabrielablay/fiscal-navigator:latest"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -21,7 +22,8 @@
     "lowdb": "^7.0.1",
     "lucide-react": "^0.563.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
