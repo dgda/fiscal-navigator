@@ -1,18 +1,7 @@
 import React, { useMemo } from 'react';
-import {
-  X,
-  TrendingUp,
-  TrendingDown,
-  Briefcase,
-  BarChart4,
-  ArrowRight,
-  Layers,
-  Receipt,
-  Minus,
-} from 'lucide-react';
+import { X, TrendingUp, Briefcase, BarChart4, Layers, Receipt } from 'lucide-react';
 import { useTreasury } from '../../../context/TreasuryContext';
 import { RoadmapCycle } from '../../../types/roadmap';
-import { Transaction } from '../../../types';
 import { parse, subMonths, parseISO, isSameMonth, format } from 'date-fns';
 
 interface AuditPanelProps {
@@ -59,7 +48,11 @@ const generateExecutiveReport = (
   prevCycles.forEach((cycle) => {
     cycle.txs.forEach((tx) => {
       const val = Math.abs(tx.amount);
-      checkIsIncome(tx.typeId) ? (report.prev.inc += val) : (report.prev.exp += val);
+      if (checkIsIncome(tx.typeId)) {
+        report.prev.inc += val;
+      } else {
+        report.prev.exp += val;
+      }
     });
   });
 
@@ -89,6 +82,7 @@ const generateExecutiveReport = (
       }
     });
 
+    // @ts-expect-error number somehow not comparable to 0
     report.periods.push(period);
   });
 
