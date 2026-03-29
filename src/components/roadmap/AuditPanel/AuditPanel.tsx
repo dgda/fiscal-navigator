@@ -1,89 +1,317 @@
 import React, { useMemo } from 'react';
-import { GroupedRoadmapTransactions, RoadmapCycle } from '../../../types/roadmap';
-import CycleLedgerProofs from './CycleLedgerProofs/CycleLedgerProofs';
-import PerformanceDeltas from './PerformanceDeltas/PerformanceDeltas';
-import GrandEquation from './GrandEquation/GrandEquation';
-import AuditPanelHeader from './AuditPanelHeader';
+import {
+  X,
+  TrendingUp,
+  TrendingDown,
+  Briefcase,
+  BarChart4,
+  ArrowRight,
+  Layers,
+  Receipt,
+  Minus,
+} from 'lucide-react';
+import { useTreasury } from '../../../context/TreasuryContext';
+import { RoadmapCycle } from '../../../types/roadmap';
+import { Transaction } from '../../../types';
+import { parse, subMonths, parseISO, isSameMonth, format } from 'date-fns';
 
 interface AuditPanelProps {
-  activeMonthSummary: string | null;
+  activeMonthSummary: string | null; // e.g., "March 2026"
   isOpening: boolean;
   isClosing: boolean;
   handleClose: () => void;
-  groupedCycleOptions: GroupedRoadmapTransactions;
   roadmap: RoadmapCycle[];
 }
 
-const AuditPanel: React.FC<AuditPanelProps> = (props) => {
-  const { activeMonthSummary, isOpening, isClosing, handleClose, groupedCycleOptions, roadmap } =
-    props;
+/**
+ * --- PURE DATA ENGINE ---
+ * Hoisted to prevent React Compiler closure traps.
+ * Computes Month-over-Month (MoM) variance and Period-over-Period (PoP) breakdown.
+ */
+const generateExecutiveReport = (
+  activeMonthLabel: string,
+  roadmap: RoadmapCycle[],
+  checkIsIncome: (id: string) => boolean,
+) => {
+  // 1. Establish Temporal Bounds
+  const targetDate = parse(activeMonthLabel, 'MMMM yyyy', new Date());
+  const prevDate = subMonths(targetDate, 1);
 
-  const monthData = useMemo(() => {
-    if (!activeMonthSummary || !groupedCycleOptions[activeMonthSummary]) return null;
+  const report = {
+    curr: { inc: 0, exp: 0 },
+    prev: { inc: 0, exp: 0 },
+    periods: [] as { label: string; date: Date; inc: 0; exp: 0 }[],
+  };
 
-    const cycleKeys = new Set(groupedCycleOptions[activeMonthSummary].map((c) => c.key));
-    const cycles = roadmap.filter((r) => cycleKeys.has(r.key));
-    const sortedCycles = [...cycles].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
+  // 2. Classify Cycles by Month
+  const currCycles: RoadmapCycle[] = [];
+  const prevCycles: RoadmapCycle[] = [];
 
-    const firstCycle = sortedCycles[0];
-    const lastCycle = sortedCycles[sortedCycles.length - 1];
+  roadmap.forEach((cycle) => {
+    if (!cycle.txs.length) return;
+    const cycleDate = parseISO(cycle.txs[0].date);
 
-    const totals = cycles.reduce(
-      (acc, c) => ({
-        projInflow: acc.projInflow + (c.headers.INFLOW || 0),
-        actualInflow: acc.actualInflow + (c.headers.ACTUAL_INFLOW || 0),
-        actualOutflow: acc.actualOutflow + (c.headers.CLEARED || 0),
-        plannedOutflow: acc.plannedOutflow + (c.headers.PLANNED || 0),
-        actualSurplus: acc.actualSurplus + (c.headers.SURPLUS || 0),
-        projectedMargin: acc.projectedMargin + (c.headers.MARGIN || 0),
-      }),
-      {
-        projInflow: 0,
-        actualInflow: 0,
-        actualOutflow: 0,
-        plannedOutflow: 0,
-        actualSurplus: 0,
-        projectedMargin: 0,
-      },
-    );
+    if (isSameMonth(cycleDate, targetDate)) currCycles.push(cycle);
+    else if (isSameMonth(cycleDate, prevDate)) prevCycles.push(cycle);
+  });
 
-    return {
-      cycles: sortedCycles,
-      totals,
-      start: firstCycle?.headers.PREV_PROJECTED || 0,
-      endActual: lastCycle?.headers.NET_ACTUAL || 0,
-      endProjected: lastCycle?.headers.NET_PROJECTED || 0,
+  // 3. Process Previous Month Baseline
+  prevCycles.forEach((cycle) => {
+    cycle.txs.forEach((tx) => {
+      const val = Math.abs(tx.amount);
+      checkIsIncome(tx.typeId) ? (report.prev.inc += val) : (report.prev.exp += val);
+    });
+  });
+
+  // 4. Process Current Month & Chronological Periods
+  // Sort ascending so Period 1 comes before Period 2
+  const sortedCurrCycles = [...currCycles].sort(
+    (a, b) => parseISO(a.txs[0].date).getTime() - parseISO(b.txs[0].date).getTime(),
+  );
+
+  sortedCurrCycles.forEach((cycle, index) => {
+    const cycleDate = parseISO(cycle.txs[0].date);
+    const period = {
+      label: `Period ${index + 1}`,
+      date: cycleDate,
+      inc: 0,
+      exp: 0,
     };
-  }, [activeMonthSummary, groupedCycleOptions, roadmap]);
 
-  if (!activeMonthSummary || !monthData) return null;
-  const isOpen = isOpening && !isClosing;
+    cycle.txs.forEach((tx) => {
+      const val = Math.abs(tx.amount);
+      if (checkIsIncome(tx.typeId)) {
+        report.curr.inc += val;
+        period.inc += val;
+      } else {
+        report.curr.exp += val;
+        period.exp += val;
+      }
+    });
+
+    report.periods.push(period);
+  });
+
+  // 5. Variance Math
+  const calcVariance = (curr: number, prev: number) => {
+    if (prev === 0) return { pct: 0, abs: curr, isUp: curr > 0 };
+    const diff = curr - prev;
+    return { pct: (diff / prev) * 100, abs: Math.abs(diff), isUp: diff > 0 };
+  };
+
+  return {
+    totals: {
+      income: report.curr.inc,
+      expense: report.curr.exp,
+      netMargin: report.curr.inc - report.curr.exp,
+      marginPct:
+        report.curr.inc > 0 ? ((report.curr.inc - report.curr.exp) / report.curr.inc) * 100 : 0,
+    },
+    variance: {
+      income: calcVariance(report.curr.inc, report.prev.inc),
+      expense: calcVariance(report.curr.exp, report.prev.exp),
+    },
+    periods: report.periods,
+  };
+};
+
+const AuditPanel: React.FC<AuditPanelProps> = ({
+  activeMonthSummary,
+  isOpening,
+  isClosing,
+  handleClose,
+  roadmap,
+}) => {
+  const { checkIsIncome } = useTreasury();
+
+  // Memoize the report generation to run only when the active month changes
+  const report = useMemo(() => {
+    if (!activeMonthSummary) return null;
+    return generateExecutiveReport(activeMonthSummary, roadmap, checkIsIncome);
+  }, [activeMonthSummary, roadmap, checkIsIncome]);
+
+  if (!activeMonthSummary || !report) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-[10000] flex justify-end bg-black/20 backdrop-blur-sm transition-all duration-700 ease-in-out ${
-        isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+      className={`fixed inset-y-0 right-0 z-[100] w-full max-w-md border-l border-black/5 bg-[#F5F5F7] shadow-2xl transition-transform duration-500 ease-in-out dark:border-white/10 dark:bg-[#0A0A0B] ${
+        isOpening && !isClosing ? 'translate-x-0' : 'translate-x-full'
       }`}
-      onClick={handleClose}
     >
-      <div
-        className={`m-3 w-[460px] overflow-hidden rounded-[32px] border border-white/40 bg-[#F5F5F7]/95 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.25)] backdrop-blur-[40px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] dark:border-white/10 dark:bg-[#121214]/95 ${
-          isOpen ? 'translate-x-0 scale-100' : 'translate-x-[110%] scale-[0.96]'
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <AuditPanelHeader handleClose={handleClose} activeMonthSummary={activeMonthSummary} />
-
-        <div className="no-scrollbar h-[calc(100%-60px)] space-y-5 overflow-y-auto p-5">
-          <GrandEquation monthData={monthData} />
-
-          <PerformanceDeltas monthData={monthData} />
-
-          <CycleLedgerProofs monthData={monthData} />
+      {/* HEADER */}
+      <div className="flex items-center justify-between border-b border-black/5 bg-white px-6 py-5 dark:border-white/5 dark:bg-[#1C1C1E]">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white shadow-md dark:bg-white dark:text-black">
+            <BarChart4 size={18} />
+          </div>
+          <div>
+            <h2 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">
+              {activeMonthSummary}
+            </h2>
+            <p className="text-[10px] font-bold tracking-widest text-slate-400">
+              EXECUTIVE SUMMARY
+            </p>
+          </div>
         </div>
+        <button
+          onClick={handleClose}
+          className="rounded-full bg-slate-100 p-2 text-slate-500 transition-colors hover:bg-slate-200 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10"
+        >
+          <X size={16} />
+        </button>
       </div>
+
+      <div className="no-scrollbar h-full space-y-6 overflow-y-auto p-6 pb-32">
+        {/* SECTION 1: MONTHLY KPI BOARD */}
+        <section className="grid grid-cols-2 gap-4">
+          <KpiCard title="Gross Inflow" value={report.totals.income} color="emerald" />
+          <KpiCard title="Operating Outflow" value={report.totals.expense} color="rose" />
+          <div className="col-span-2 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5 dark:border-blue-400/10 dark:bg-blue-400/5">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">
+                  Net Position
+                </p>
+                <p className="mt-1 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                  PHP{' '}
+                  {report.totals.netMargin.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                  Retained Margin
+                </p>
+                <p className="text-lg font-black text-blue-600 dark:text-blue-400">
+                  {report.totals.marginPct.toFixed(1)}%
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 2: EXPENSE VARIANCE ANALYSIS (The Hero Metric) */}
+        <section>
+          <div className="mb-3 flex items-center gap-2">
+            <TrendingUp size={14} className="text-slate-400" />
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Variance Analysis (MoM)
+            </h3>
+          </div>
+
+          <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-[#1C1C1E]">
+            <p className="text-[11px] font-bold text-slate-400">Expense Growth</p>
+            <div className="mt-2 flex items-baseline gap-3">
+              <span
+                className={`text-3xl font-black tracking-tighter ${report.variance.expense.isUp ? 'text-rose-500' : 'text-emerald-500'}`}
+              >
+                {report.variance.expense.isUp ? '+' : '-'}
+                {Math.abs(report.variance.expense.pct).toFixed(1)}%
+              </span>
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                vs prev month
+              </span>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between border-t border-black/5 pt-4 dark:border-white/5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Absolute Difference
+              </span>
+              <span
+                className={`font-mono text-sm font-bold ${report.variance.expense.isUp ? 'text-rose-500' : 'text-emerald-500'}`}
+              >
+                {report.variance.expense.isUp ? '▲' : '▼'} PHP{' '}
+                {report.variance.expense.abs.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 3: PERIOD RECONCILIATION */}
+        <section>
+          <div className="mb-3 flex items-center gap-2">
+            <Layers size={14} className="text-slate-400" />
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Ledger Periods
+            </h3>
+          </div>
+
+          <div className="space-y-3">
+            {report.periods.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-black/10 p-6 text-center dark:border-white/10">
+                <p className="text-xs font-bold text-slate-400">
+                  No active cycles recorded for this month.
+                </p>
+              </div>
+            ) : (
+              report.periods.map((period, idx) => (
+                <div
+                  key={idx}
+                  className="flex flex-col gap-3 rounded-xl border border-black/5 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-[#1C1C1E]"
+                >
+                  <div className="flex items-center justify-between border-b border-black/5 pb-2 dark:border-white/5">
+                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-white">
+                      {period.label}
+                    </span>
+                    <span className="text-[9px] font-bold text-slate-400">
+                      {format(period.date, 'MMM dd, yyyy')}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                        Inflow
+                      </p>
+                      <p className="font-mono text-sm font-bold text-emerald-500">
+                        PHP {period.inc.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                        Outflow
+                      </p>
+                      <p className="font-mono text-sm font-bold text-rose-500">
+                        PHP {period.exp.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+};
+
+// --- SUB-COMPONENTS ---
+
+const KpiCard = ({
+  title,
+  value,
+  color,
+}: {
+  title: string;
+  value: number;
+  color: 'emerald' | 'rose';
+}) => {
+  const isEmerald = color === 'emerald';
+  return (
+    <div className="rounded-2xl border border-black/5 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-[#1C1C1E]">
+      <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-50 dark:bg-white/5">
+        {isEmerald ? (
+          <Briefcase size={12} className="text-emerald-500" />
+        ) : (
+          <Receipt size={12} className="text-rose-500" />
+        )}
+      </div>
+      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">{title}</p>
+      <p
+        className={`mt-1 text-lg font-black tracking-tight ${isEmerald ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}
+      >
+        PHP {value.toLocaleString(undefined, { notation: 'compact', maximumFractionDigits: 1 })}
+      </p>
     </div>
   );
 };
