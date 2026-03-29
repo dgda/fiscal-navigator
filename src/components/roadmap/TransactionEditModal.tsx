@@ -54,6 +54,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
   useEffect(() => {
     if (transactionId) {
       const found = data.transactions.find((t) => t.id === transactionId);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (found) setTx({ ...found });
     }
   }, [transactionId, data.transactions]);
