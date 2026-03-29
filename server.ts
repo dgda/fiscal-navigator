@@ -4,7 +4,11 @@ import { JSONFilePreset } from 'lowdb/node';
 import { TreasuryData } from './src/types';
 import path from 'path';
 import 'dotenv/config';
-import { Environment } from './src/types/environment';
+
+enum Environment {
+  STAGING = 'staging',
+  PRODUCTION = 'production',
+}
 
 const app = express();
 app.use(express.json({ limit: '100mb' })); // Increase to 100mb
