@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Transaction } from '../../../types';
-import { X, AlertCircle, Check, DollarSign, ArrowRight } from 'lucide-react';
+import { X, AlertCircle, Check, DollarSign } from 'lucide-react';
 import { CURRENCY_SYMBOL } from '../../../constants';
 
 interface BalanceReconciliationModalProps {
