@@ -35,6 +35,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!loading && data?.preferences) {
       const { theme: dbTheme, useSystemDefault: dbSystem } = data.preferences;
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsSystemDefault(dbSystem);
 
       if (dbSystem) {
@@ -56,6 +57,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Ensure correct sync if we just switched to system default
     if (isSystemDefault) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       applyTheme(mediaQuery.matches ? 'dark' : 'light');
     }
 
@@ -105,6 +107,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
   const ctx = useContext(ThemeContext);
   if (!ctx) throw new Error('useTheme must be within ThemeProvider');

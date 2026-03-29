@@ -1,6 +1,6 @@
 import React from 'react';
 import MetricBadges from '../MetricBadges/MetricBadges';
-import { CycleStatus, RoadmapCycle } from '../../../../types/roadmap';
+import { RoadmapCycle } from '../../../../types/roadmap';
 
 interface CycleTitleProps {
   cycleData: RoadmapCycle;

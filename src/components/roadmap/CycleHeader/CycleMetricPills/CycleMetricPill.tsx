@@ -1,9 +1,12 @@
+import { LucideProps } from 'lucide-react';
 import React from 'react';
 
 export interface CycleMetricPillsProps {
   label: string;
   value: number;
-  icon: React.ComponentType<any>;
+  icon: React.ForwardRefExoticComponent<
+    Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>
+  >;
   colorClass: string;
   valueColorClass: string;
   tooltipContent?: React.ReactNode;

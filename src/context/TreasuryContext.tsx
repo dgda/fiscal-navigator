@@ -118,6 +118,7 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (!data) return false;
       const t = data.types.find((x) => x.id === typeId);
       if (!t) return false;
+      // eslint-disable-next-line react-hooks/immutability
       return t.name === 'Income' ? true : t.parent_type ? checkIsIncome(t.parent_type) : false;
     },
     [data],
@@ -128,6 +129,7 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (!data) return false;
       const t = data.types.find((x) => x.id === typeId);
       if (!t) return false;
+      // eslint-disable-next-line react-hooks/immutability
       return t.name === 'Transfer' ? true : t.parent_type ? checkIsTransfer(t.parent_type) : false;
     },
     [data],
@@ -191,7 +193,7 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const nextTxs = data.transactions.map((t) => {
       if (t.id !== id) return t;
       const snapshot = { ...t };
-      // @ts-ignore
+      // @ts-expect-error clearing values
       delete snapshot.history;
 
       return {
@@ -211,7 +213,7 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (t.id !== id) return t;
       const nextStatus = !t.isPaid;
       const snapshot = { ...t };
-      // @ts-ignore
+      // @ts-expect-error clearing values
       delete snapshot.history;
 
       return {
@@ -232,10 +234,15 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const now = new Date().toISOString();
 
     const {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       id: _id,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       date: _date,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       cycleKey: _cycleKey,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       created_at: _ca,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       history: _h,
       ...safeUpdates
     } = baseUpdates;
@@ -244,7 +251,7 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (t.recurringGroupId !== groupId || t.isPaid) return t;
 
       const snapshot = { ...t };
-      // @ts-ignore
+      // @ts-expect-error clearing values
       delete snapshot.history;
 
       return {
@@ -311,6 +318,7 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTreasury = () => {
   const ctx = useContext(TreasuryContext);
   if (!ctx) throw new Error('useTreasury must be used within TreasuryProvider');

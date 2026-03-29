@@ -1,6 +1,6 @@
 import React from 'react';
 import LiquidityGapIndicator from './LiquidityGap/LiquidityGap';
-import { CycleStatus, RoadmapCycle } from '../../../types/roadmap';
+import { RoadmapCycle } from '../../../types/roadmap';
 import BalanceCards from './BalanceCards/BalanceCards';
 import CycleMetricPills from './CycleMetricPills/CycleMetricPills';
 import CycleTitle from './CycleTitle/CycleTitle';
