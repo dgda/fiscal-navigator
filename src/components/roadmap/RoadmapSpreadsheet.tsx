@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useTreasury } from '../../context/TreasuryContext';
-import { UseRoadmapProps, useRoadmap } from '../../hooks/useRoadmap';
+import { UseRoadmapProps } from '../../hooks/useRoadmap';
+import { useRoadmap } from '../../hooks/useRoadmap';
 import { format } from 'date-fns';
 import { Transaction } from '../../types';
 import DeleteModal from './DeleteModal/DeleteModal';
