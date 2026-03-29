@@ -1,6 +1,6 @@
 import React from 'react';
 import BalanceCard from './BalanceCard';
-import { CycleStatus, RoadmapCycle } from '../../../../types/roadmap';
+import { RoadmapCycle } from '../../../../types/roadmap';
 
 interface BalanceCardsProps {
   cycleData: RoadmapCycle;
