@@ -42,13 +42,17 @@ export interface UseRoadmapProps {
 export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
   const { mode, year, month } = props;
   const { data, totalLiquidity } = useTreasury();
-  const payoutConfig = data?.payoutConfig || {
-    archetype: 'bi-weekly',
-    fixedIntervalDays: DEFAULT_FIXED_INTERVAL,
-    anchorDate: DEFAULT_ANCHOR_DATE,
-    semiMonthlyDays: [15, 30],
-    monthlyDay: 1,
-  };
+  const payoutConfig = useMemo(() => {
+    return (
+      data?.payoutConfig || {
+        archetype: 'bi-weekly',
+        fixedIntervalDays: DEFAULT_FIXED_INTERVAL,
+        anchorDate: DEFAULT_ANCHOR_DATE,
+        semiMonthlyDays: [15, 30],
+        monthlyDay: 1,
+      }
+    );
+  }, [data?.payoutConfig]);
 
   const masterCycles: RoadmapTransaction[] = useMemo(() => {
     const roadmapTransactions: RoadmapTransaction[] = [];
@@ -67,7 +71,7 @@ export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
         curr = addDays(curr, fixedIntervalDays || DEFAULT_FIXED_INTERVAL);
       }
     } else if (archetype === 'semi-monthly') {
-      let startMonth = startOfMonth(new Date());
+      const startMonth = startOfMonth(new Date());
       for (let i = 0; i < 12; i++) {
         const currMonth = addMonths(startMonth, i);
         (semiMonthlyDays || [15, 30]).forEach((day, idx) => {
@@ -82,7 +86,7 @@ export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
         });
       }
     } else if (archetype === 'monthly') {
-      let startMonth = startOfMonth(new Date());
+      const startMonth = startOfMonth(new Date());
       for (let i = 0; i < 12; i++) {
         const currMonth = addMonths(startMonth, i);
         const date = setDate(currMonth, monthlyDay || 1);
@@ -168,12 +172,13 @@ export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
       const netFlowProjected = projectedIncome - estimatedExpenses;
       const netFlowActual = actualIncome - actualExpenses;
 
+      // eslint-disable-next-line react-hooks/immutability
       cumEstimatedExpenses += estimatedExpenses;
       cumActualSaved += netFlowActual;
       cumEstSaved += netFlowProjected;
 
       const averageCumEstimatedExpensesSoFar = cumEstimatedExpenses / (index + 1);
-      const averageCumActualSavedSoFar = cumActualSaved / (index + 1);
+      // const averageCumActualSavedSoFar = cumActualSaved / (index + 1);
       // Net burn rate
       // const burnRateSoFar = averageCumEstimatedExpensesSoFar - averageCumActualSavedSoFar;
 
@@ -257,7 +262,14 @@ export const useRoadmap = (props: UseRoadmapProps): IUseRoadmap => {
     }
 
     return { roadmap, bufferDays: bDays };
-  }, [data, groupedCycleOptions, totalLiquidity]);
+  }, [
+    data.baseSalary,
+    data.transactions,
+    data.types,
+    groupedCycleOptions,
+    payoutConfig.fixedIntervalDays,
+    totalLiquidity,
+  ]);
 
   return {
     roadmap: roadmapData.roadmap,
