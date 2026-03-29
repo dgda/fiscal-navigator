@@ -3,6 +3,8 @@ import cors from 'cors';
 import { JSONFilePreset } from 'lowdb/node';
 import { TreasuryData } from './src/types';
 import path from 'path';
+import 'dotenv/config';
+import { Environment } from './src/types/environment';
 
 const app = express();
 app.use(express.json({ limit: '100mb' })); // Increase to 100mb
@@ -49,9 +51,16 @@ const defaultData: TreasuryData = {
   },
 };
 
+const environment: Environment = (process.env.ENV as Environment) || Environment.PRODUCTION;
+
+const __dirname = path.resolve();
+
+const dbPath =
+  environment === Environment.STAGING ? path.join(__dirname, 'db.json') : '/app/data/db.json';
+
 // Initialize DB
 
-const db = await JSONFilePreset<TreasuryData>('/app/data/db.json', defaultData);
+const db = await JSONFilePreset<TreasuryData>(dbPath, defaultData);
 
 // --- MIGRATION: Ensure preferences object exists for older DBs ---
 if (!db.data.preferences) {
@@ -76,12 +85,13 @@ app.post('/api/update', async (req, res) => {
   res.json({ success: true });
 });
 
-const __dirname = path.resolve();
-app.use(express.static(path.join(__dirname, 'dist')));
+if (environment !== Environment.STAGING) {
+  app.use(express.static(path.join(__dirname, 'dist')));
 
-app.get('*any', (_req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
+  app.get('*any', (_req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
 
 app.listen(3001, '0.0.0.0', () => {
   console.log('🏛️  Treasury OS Core: http://0.0.0.0:3001');
