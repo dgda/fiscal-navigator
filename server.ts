@@ -75,7 +75,7 @@ if (!db.data.payoutConfig) {
   await db.write();
 }
 
-app.get('/api/data', (req, res) => {
+app.get('/api/data', (_req, res) => {
   res.json(db.data);
 });
 
