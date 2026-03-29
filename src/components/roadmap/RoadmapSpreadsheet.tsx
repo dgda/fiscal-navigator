@@ -37,6 +37,7 @@ const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
       const timer = requestAnimationFrame(() => setIsOpening(true));
       return () => cancelAnimationFrame(timer);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsOpening(false);
     }
   }, [activeMonthSummary]);
@@ -144,7 +145,6 @@ const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
         isOpening={isOpening}
         isClosing={isClosing}
         handleClose={handleClose}
-        groupedCycleOptions={groupedCycleOptions}
         roadmap={roadmap}
       />
     </div>
