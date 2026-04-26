@@ -88,15 +88,27 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const setUseSystemDefault = async (val: boolean) => {
     setIsSystemDefault(val);
 
-    if (val) {
+    let themeToPersist: Theme; // This will hold the theme that should be saved to DB
+
+    if (val) { // User wants to use system default
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
         : 'light';
-      applyTheme(systemTheme);
+      applyTheme(systemTheme); // Apply the system theme immediately
+      themeToPersist = systemTheme; // Save the system theme as the explicit theme in DB
+    } else { // User wants to use an explicit theme (switching off system default)
+      // The `theme` state already holds the explicit theme that was active
+      // (either from a previous toggle or initial load).
+      // We should apply this explicit theme and persist it.
+      applyTheme(theme); // Ensure the current explicit theme is applied
+      themeToPersist = theme; // Save the current explicit theme to DB
     }
 
     if (updatePreferences) {
-      await updatePreferences({ useSystemDefault: val });
+      await updatePreferences({
+        useSystemDefault: val,
+        theme: themeToPersist, // Always send the theme when updating system default
+      });
     }
   };
 
