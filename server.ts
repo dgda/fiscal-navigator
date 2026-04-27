@@ -68,13 +68,13 @@ const db = await JSONFilePreset<TreasuryData>(dbPath, defaultData);
 
 // --- MIGRATION: Ensure preferences object exists for older DBs ---
 if (!db.data.preferences) {
-  console.log('⚙️  Migrating DB: Adding User Preferences...');
+  console.log('Migrating DB: Adding User Preferences...');
   db.data.preferences = defaultData.preferences;
   await db.write();
 }
 // --- MIGRATION: Ensure payoutConfig exists ---
 if (!db.data.payoutConfig) {
-  console.log('⚙️  Migrating DB: Adding Payout Config...');
+  console.log('Migrating DB: Adding Payout Config...');
   db.data.payoutConfig = defaultData.payoutConfig;
   await db.write();
 }
@@ -98,5 +98,5 @@ if (environment !== Environment.STAGING) {
 }
 
 app.listen(3001, '0.0.0.0', () => {
-  console.log('🏛️  Treasury OS Core: http://0.0.0.0:3001');
+  console.log('Treasury OS Core: http://0.0.0.0:3001');
 });
