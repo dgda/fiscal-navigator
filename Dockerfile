@@ -14,8 +14,9 @@ RUN npm install --omit=dev
 # Copy built assets and server code
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server.ts ./
+COPY --from=build /app/src ./src
 # Copy db.json (LowDB)
-COPY db.json ./ 
+# COPY db.json ./
 
 EXPOSE 3001
 # Using tsx to run the server.ts directly or compile to JS first
