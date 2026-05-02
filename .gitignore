@@ -9,8 +9,10 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-server
 dist-ssr
 *.local
+*.tsbuildinfo
 
 # Editor directories and files
 .vscode/*
@@ -22,16 +24,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.claude/
 
 db.json
 db.json.bak
 data/
 backups/
-
-package-lock.json
-
-/app/data
-/app/data/db.json
 
 .env
 .aider*
