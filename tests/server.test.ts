@@ -385,6 +385,73 @@ describe('JSONFilePreset seeding', () => {
   });
 });
 
+describe('POST /api/update backups', () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'treasury-backup-int-'));
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  test('given dbPath option and an existing db file, when POST /api/update, then db.json.bak is written before the update', async () => {
+    const dbPath = path.join(tmpDir, 'db.json');
+    await fs.writeFile(dbPath, JSON.stringify({ baseSalary: 1 }));
+    const db = buildDb({ baseSalary: 1 });
+    const app = createApp(db, { dbPath });
+    await request(app).post('/api/update').send({ ...defaultData, baseSalary: 2 });
+    const bak = JSON.parse(await fs.readFile(`${dbPath}.bak`, 'utf-8'));
+    expect(bak.baseSalary).toBe(1);
+  });
+
+  test('given dbPath option and an existing db file, when POST /api/update, then a daily snapshot is written under backups/', async () => {
+    const dbPath = path.join(tmpDir, 'db.json');
+    await fs.writeFile(dbPath, JSON.stringify(defaultData));
+    const db = buildDb();
+    const app = createApp(db, { dbPath });
+    await request(app).post('/api/update').send(defaultData);
+    const snapshots = await fs.readdir(path.join(tmpDir, 'backups'));
+    expect(snapshots).toHaveLength(1);
+    expect(snapshots[0]).toMatch(/^db\.\d{4}-\d{2}-\d{2}\.json$/);
+  });
+
+  test('given no dbPath option, when POST /api/update, then no backup files are created', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    await request(app).post('/api/update').send(defaultData);
+    await expect(fs.access(path.join(tmpDir, 'backups'))).rejects.toThrow();
+  });
+
+  test('given dbPath but no existing db file (cold start), when POST /api/update, then write succeeds and no .bak is created', async () => {
+    const dbPath = path.join(tmpDir, 'db.json');
+    const db = buildDb();
+    const app = createApp(db, { dbPath });
+    const res = await request(app).post('/api/update').send(defaultData);
+    expect(res.status).toBe(200);
+    await expect(fs.access(`${dbPath}.bak`)).rejects.toThrow();
+  });
+
+  test('given backup throws, when POST /api/update, then the write still succeeds (errors are non-fatal)', async () => {
+    // unwritable dir simulates a backup failure
+    const dbPath = path.join(tmpDir, 'nested', 'db.json');
+    await fs.mkdir(path.join(tmpDir, 'nested'));
+    await fs.writeFile(dbPath, JSON.stringify(defaultData));
+    await fs.chmod(path.join(tmpDir, 'nested'), 0o500);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const db = buildDb();
+      const app = createApp(db, { dbPath });
+      const res = await request(app).post('/api/update').send(defaultData);
+      expect(res.status).toBe(200);
+    } finally {
+      await fs.chmod(path.join(tmpDir, 'nested'), 0o700);
+      errorSpy.mockRestore();
+    }
+  });
+});
+
 describe('Static SPA serving', () => {
   let tmpDir: string;
 

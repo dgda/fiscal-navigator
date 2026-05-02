@@ -24,6 +24,9 @@ dist-ssr
 *.sw?
 
 db.json
+db.json.bak
+data/
+backups/
 
 package-lock.json
 
