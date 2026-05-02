@@ -19,8 +19,9 @@
     "docker:start": "npm run docker:build && npm run docker:run",
     "docker:stop": "docker rm -f fnav",
     "docker:logs": "docker logs -f fnav",
-    "deploy": "docker buildx build --platform linux/amd64,linux/arm64 -t dgabrielablay/fiscal-navigator:latest --push .",
-    "deploy:single": "docker build -t dgabrielablay/fiscal-navigator:latest . && docker push dgabrielablay/fiscal-navigator:latest"
+    "deploy:readme": "docker pushrm dgabrielablay/fiscal-navigator -f DOCKERHUB.md",
+    "deploy": "docker buildx build --platform linux/amd64,linux/arm64 -t dgabrielablay/fiscal-navigator:latest --push . && npm run deploy:readme",
+    "deploy:single": "docker build -t dgabrielablay/fiscal-navigator:latest . && docker push dgabrielablay/fiscal-navigator:latest && npm run deploy:readme"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
