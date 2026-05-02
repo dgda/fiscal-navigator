@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { Low } from 'lowdb';
 import { TreasuryData } from '../types';
+import { backupBeforeWrite, snapshotDaily } from './backup';
 
 export enum Environment {
   STAGING = 'staging',
@@ -83,6 +84,8 @@ export interface CreateAppOptions {
   serveStatic?: boolean;
   staticDir?: string;
   payloadLimit?: string;
+  dbPath?: string;
+  backupRetainDays?: number;
 }
 
 export function createApp(db: Low<TreasuryData>, opts: CreateAppOptions = {}): Express {
@@ -107,6 +110,14 @@ export function createApp(db: Low<TreasuryData>, opts: CreateAppOptions = {}): E
   });
 
   app.post('/api/update', async (req, res) => {
+    if (opts.dbPath) {
+      try {
+        await backupBeforeWrite(opts.dbPath);
+        await snapshotDaily(opts.dbPath, opts.backupRetainDays ?? 7);
+      } catch (err) {
+        console.error('Backup failed (continuing with write)', err);
+      }
+    }
     db.data = req.body;
     await db.write();
     res.json({ success: true });

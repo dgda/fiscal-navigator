@@ -9,6 +9,8 @@ dist
 data
 db.json
 db copy.json
+db.json.bak
+backups
 tests
 vitest.config.ts
 .vscode

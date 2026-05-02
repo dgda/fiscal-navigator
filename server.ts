@@ -24,6 +24,7 @@ await runMigrations(db);
 const app = createApp(db, {
   serveStatic: environment !== Environment.STAGING,
   staticDir: path.join(__dirname, 'dist'),
+  dbPath,
 });
 
 app.listen(3001, '0.0.0.0', () => {
