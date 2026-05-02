@@ -3,6 +3,21 @@ import { useTreasury } from './TreasuryContext';
 
 type Theme = 'light' | 'dark';
 
+const THEME_CACHE_KEY = 'fnav-theme';
+
+const readSystemTheme = (): Theme =>
+  window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+const readCachedTheme = (): Theme => {
+  try {
+    const cached = localStorage.getItem(THEME_CACHE_KEY);
+    if (cached === 'dark' || cached === 'light') return cached;
+  } catch {
+    // localStorage unavailable
+  }
+  return readSystemTheme();
+};
+
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
@@ -15,7 +30,7 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { data, updatePreferences, loading } = useTreasury();
 
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>(readCachedTheme);
   const [isSystemDefault, setIsSystemDefault] = useState(true);
 
   const applyTheme = useCallback((newTheme: Theme) => {
@@ -27,45 +42,34 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.classList.remove('dark');
       root.style.colorScheme = 'light';
     }
+    try {
+      localStorage.setItem(THEME_CACHE_KEY, newTheme);
+    } catch {
+      // localStorage unavailable
+    }
     setTheme(newTheme);
   }, []);
 
-  // 1. Sync state from DB on Load
+  // Resolve theme from DB preferences and (when system default is active) keep in sync with the OS.
   useEffect(() => {
-    if (!loading && data?.preferences) {
-      const { theme: dbTheme, useSystemDefault: dbSystem } = data.preferences;
+    if (loading || !data?.preferences) return;
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsSystemDefault(dbSystem);
+    const { theme: dbTheme, useSystemDefault: dbSystem } = data.preferences;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsSystemDefault(dbSystem);
 
-      if (dbSystem) {
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light';
-        applyTheme(systemTheme);
-      } else {
-        applyTheme(dbTheme || 'light');
-      }
+    if (!dbSystem) {
+      applyTheme(dbTheme || 'light');
+      return;
     }
-  }, [loading, data?.preferences, applyTheme]);
-
-  // 2. Listen for System Changes
-  useEffect(() => {
-    if (!isSystemDefault) return;
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    // Ensure correct sync if we just switched to system default
-    if (isSystemDefault) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      applyTheme(mediaQuery.matches ? 'dark' : 'light');
-    }
+    applyTheme(mediaQuery.matches ? 'dark' : 'light');
 
     const handleChange = (e: MediaQueryListEvent) => applyTheme(e.matches ? 'dark' : 'light');
     mediaQuery.addEventListener('change', handleChange);
-
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [isSystemDefault, applyTheme]);
+  }, [loading, data?.preferences, applyTheme]);
 
   // 3. User Actions
   const toggleTheme = async () => {
