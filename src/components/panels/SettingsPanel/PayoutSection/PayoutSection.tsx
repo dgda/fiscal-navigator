@@ -16,7 +16,7 @@ const PayoutSection: React.FC<PayoutSectionProps> = (props) => {
   const labelClass =
     'mb-2 block text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500';
   const inputClass =
-    'w-full rounded-xl border border-black/5 bg-white px-4 py-2.5 text-[11px] font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/10 dark:border-white/5 dark:bg-[#1C1C1E] dark:text-white';
+    'w-full rounded-xl border border-black/5 bg-white px-4 py-2.5 text-[11px] font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500/10 dark:border-white/5 dark:bg-[#2C2C2E] dark:text-white';
 
   return (
     <section className={sectionClass}>

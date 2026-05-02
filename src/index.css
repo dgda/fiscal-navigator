@@ -7,13 +7,13 @@
     --mac-bg: #f2f2f7;
     --mac-surface: #ffffff;
     --mac-border: theme('colors.slate.200');
-    --mac-text-primary: #1c1c1e;
+    --mac-text-primary: #2C2C2E;
     --mac-text-secondary: theme('colors.slate.500');
   }
 
   .dark {
     --mac-bg: #1e1e1e;
-    --mac-surface: #2d2d2d;
+    --mac-surface: #2C2C2E;
     --mac-border: rgba(255, 255, 255, 0.08);
     --mac-text-primary: #e1e1e1;
     --mac-text-secondary: #a1a1a1;

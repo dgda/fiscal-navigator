@@ -121,7 +121,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
   };
 
   const inputGroupClass =
-    'group relative flex items-center rounded-[10px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] ring-1 ring-black/5 transition-all focus-within:ring-2 focus-within:ring-blue-500/20 dark:bg-[#1C1C1E] dark:ring-white/10 dark:focus-within:ring-blue-500/30';
+    'group relative flex items-center rounded-[10px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] ring-1 ring-black/5 transition-all focus-within:ring-2 focus-within:ring-blue-500/20 dark:bg-[#2C2C2E] dark:ring-white/10 dark:focus-within:ring-blue-500/30';
 
   const inputBaseClass =
     'w-full bg-transparent px-3 py-2.5 pl-9 text-[11px] font-semibold text-slate-900 placeholder:text-slate-400 outline-none transition-colors dark:text-[#E1E1E1] dark:placeholder:text-slate-600';
@@ -135,7 +135,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
       onClick={handleClose}
     >
       <div
-        className={`flex w-[460px] flex-col overflow-hidden rounded-[20px] bg-[#FBFBFD] shadow-2xl ring-1 ring-black/5 transition-all duration-300 dark:bg-[#0A0A0B] dark:ring-white/10 ${isClosing ? 'scale-[0.98] opacity-0' : 'scale-100 opacity-100'}`}
+        className={`flex w-[460px] flex-col overflow-hidden rounded-[20px] bg-[#FBFBFD] shadow-2xl ring-1 ring-black/5 transition-all duration-300 dark:bg-[#1E1E1F] dark:ring-white/10 ${isClosing ? 'scale-[0.98] opacity-0' : 'scale-100 opacity-100'}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* HEADER */}
@@ -246,7 +246,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
                   required
                 >
                   {Object.entries(groupedCycleOptions).map(([m, c]) => (
-                    <optgroup key={m} label={m} className="dark:bg-[#1A1A1A]">
+                    <optgroup key={m} label={m} className="dark:bg-[#28282A]">
                       {c.map((o) => (
                         <option key={o.key} value={o.key}>
                           {o.display} ({o.dateLabel})
@@ -344,7 +344,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
                 className={`group relative flex items-center justify-center gap-2 overflow-hidden rounded-[12px] border px-4 py-3 transition-all ${
                   tx.isPlanned
                     ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400'
-                    : 'border-black/5 bg-white text-slate-400 hover:border-black/10 hover:bg-slate-50 hover:text-slate-600 dark:border-white/5 dark:bg-[#1C1C1E] dark:hover:border-white/10 dark:hover:bg-white/5'
+                    : 'border-black/5 bg-white text-slate-400 hover:border-black/10 hover:bg-slate-50 hover:text-slate-600 dark:border-white/5 dark:bg-[#2C2C2E] dark:hover:border-white/10 dark:hover:bg-white/5'
                 }`}
               >
                 <Target
@@ -360,7 +360,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
                 className={`group relative flex items-center justify-center gap-2 overflow-hidden rounded-[12px] border px-4 py-3 transition-all ${
                   tx.isPaid
                     ? 'border-emerald-200 bg-emerald-50 text-emerald-700 shadow-sm dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400'
-                    : 'border-black/5 bg-white text-slate-400 hover:border-black/10 hover:bg-slate-50 hover:text-slate-600 dark:border-white/5 dark:bg-[#1C1C1E] dark:hover:border-white/10 dark:hover:bg-white/5'
+                    : 'border-black/5 bg-white text-slate-400 hover:border-black/10 hover:bg-slate-50 hover:text-slate-600 dark:border-white/5 dark:bg-[#2C2C2E] dark:hover:border-white/10 dark:hover:bg-white/5'
                 }`}
               >
                 <ShieldCheck
@@ -396,7 +396,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
 
                     return (
                       <div key={i} className="relative pl-6">
-                        <div className="absolute left-0 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-slate-300 ring-1 ring-slate-200 dark:border-[#1C1C1E] dark:bg-slate-600 dark:ring-white/10" />
+                        <div className="absolute left-0 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-slate-300 ring-1 ring-slate-200 dark:border-[#2C2C2E] dark:bg-slate-600 dark:ring-white/10" />
 
                         <div className="mb-2 flex items-baseline justify-between">
                           <span className="text-[10px] font-black uppercase text-slate-700 dark:text-slate-300">
@@ -452,7 +452,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
                   })
                 ) : (
                   <div className="flex items-center gap-2 pl-6 pt-1 text-slate-400">
-                    <div className="absolute left-0 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-slate-200 dark:border-[#1C1C1E] dark:bg-white/10" />
+                    <div className="absolute left-0 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-slate-200 dark:border-[#2C2C2E] dark:bg-white/10" />
                     <span className="text-[10px] italic">No modifications logged</span>
                   </div>
                 )}
@@ -462,7 +462,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
         </div>
 
         {/* FOOTER */}
-        <div className="flex items-center gap-3 border-t border-black/5 bg-slate-50/50 p-4 backdrop-blur-md dark:border-white/5 dark:bg-[#141416]">
+        <div className="flex items-center gap-3 border-t border-black/5 bg-slate-50/50 p-4 backdrop-blur-md dark:border-white/5 dark:bg-[#28282A]">
           <button
             onClick={handleClose}
             className="rounded-[10px] px-4 py-2.5 text-[10px] font-black uppercase tracking-wide text-slate-500 transition-colors hover:bg-black/5 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"

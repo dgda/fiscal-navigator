@@ -231,6 +231,243 @@ describe('POST /api/update edge cases (locks current monolithic behavior)', () =
   });
 });
 
+describe('Modular endpoints', () => {
+  test('given PATCH /api/preferences, then merges fields into preferences and returns the merged object', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const res = await request(app).patch('/api/preferences').send({ theme: 'dark' });
+    expect(res.status).toBe(200);
+    expect(res.body.preferences).toEqual({ theme: 'dark', useSystemDefault: true });
+    expect(db.data.preferences).toEqual({ theme: 'dark', useSystemDefault: true });
+  });
+
+  test('given PATCH /api/preferences with non-object body, then returns 400', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const res = await request(app).patch('/api/preferences').type('text').send('not json');
+    expect(res.status).toBe(400);
+  });
+
+  test('given PATCH /api/payout-config, then merges fields into payoutConfig', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const res = await request(app).patch('/api/payout-config').send({ archetype: 'monthly' });
+    expect(res.status).toBe(200);
+    expect(db.data.payoutConfig.archetype).toBe('monthly');
+    expect(db.data.payoutConfig.fixedIntervalDays).toBe(14);
+  });
+
+  test('given PATCH /api/base-salary with a number, then sets baseSalary', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const res = await request(app).patch('/api/base-salary').send({ baseSalary: 99 });
+    expect(res.status).toBe(200);
+    expect(db.data.baseSalary).toBe(99);
+  });
+
+  test('given PATCH /api/base-salary with non-numeric baseSalary, then returns 400 and db is untouched', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const before = db.data.baseSalary;
+    const res = await request(app).patch('/api/base-salary').send({ baseSalary: 'oops' });
+    expect(res.status).toBe(400);
+    expect(db.data.baseSalary).toBe(before);
+  });
+
+  test('given PUT /api/accounts with array, then replaces accounts', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const accounts = [{ id: 'x', name: 'X', color: '#000', startingBalance: 0 }];
+    const res = await request(app).put('/api/accounts').send({ accounts });
+    expect(res.status).toBe(200);
+    expect(db.data.accounts).toEqual(accounts);
+  });
+
+  test('given PUT /api/accounts without an array, then returns 400', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const res = await request(app).put('/api/accounts').send({ accounts: 'nope' });
+    expect(res.status).toBe(400);
+  });
+
+  test('given PUT /api/types, then replaces types', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const types = [{ id: 'newt', name: 'New', parent_type: null }];
+    const res = await request(app).put('/api/types').send({ types });
+    expect(res.status).toBe(200);
+    expect(db.data.types).toEqual(types);
+  });
+
+  test('given POST /api/transactions, then appends to existing transactions', async () => {
+    const tx = {
+      id: 'x',
+      name: 'x',
+      amount: 0,
+      typeId: 't1',
+      accountId: 'acc-1',
+      date: '2026-01-01',
+      cycleKey: 'k',
+      isPlanned: true,
+      isPaid: false,
+      isRecurring: false,
+      history: [],
+    } as never;
+    const db = buildDb({ transactions: [tx] });
+    const app = createApp(db);
+    const newTx = { ...(tx as Record<string, unknown>), id: 'y' };
+    const res = await request(app).post('/api/transactions').send({ transactions: [newTx] });
+    expect(res.status).toBe(200);
+    expect(db.data.transactions.map((t) => t.id)).toEqual(['x', 'y']);
+  });
+
+  test('given PUT /api/transactions, then replaces the entire list', async () => {
+    const db = buildDb({ transactions: [{ id: 'old' } as never] });
+    const app = createApp(db);
+    const res = await request(app).put('/api/transactions').send({ transactions: [{ id: 'new' }] });
+    expect(res.status).toBe(200);
+    expect(db.data.transactions.map((t) => t.id)).toEqual(['new']);
+  });
+
+  test('given PATCH /api/transactions/:id, then patches the tx, sets updated_at, and appends a history entry', async () => {
+    const tx = {
+      id: 'a',
+      name: 'old',
+      amount: 1,
+      typeId: 't1',
+      accountId: 'acc-1',
+      date: '2026-01-01',
+      cycleKey: 'k',
+      isPlanned: true,
+      isPaid: false,
+      isRecurring: false,
+      history: [],
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+    } as never;
+    const db = buildDb({ transactions: [tx] });
+    const app = createApp(db);
+    const res = await request(app)
+      .patch('/api/transactions/a')
+      .send({ updates: { amount: 99 }, msg: 'edit' });
+    expect(res.status).toBe(200);
+    const patched = db.data.transactions[0];
+    expect(patched.amount).toBe(99);
+    expect(patched.history).toHaveLength(1);
+    expect(patched.history[0].label).toBe('edit');
+  });
+
+  test('given PATCH /api/transactions/:id for missing id, then returns 404', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const res = await request(app)
+      .patch('/api/transactions/missing')
+      .send({ updates: {}, msg: 'm' });
+    expect(res.status).toBe(404);
+  });
+
+  test('given POST /api/transactions/:id/toggle-paid, then flips isPaid and appends history label', async () => {
+    const tx = {
+      id: 'a',
+      name: 'x',
+      amount: 0,
+      typeId: 't1',
+      accountId: 'acc-1',
+      date: '2026-01-01',
+      cycleKey: 'k',
+      isPlanned: true,
+      isPaid: false,
+      isRecurring: false,
+      history: [],
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+    } as never;
+    const db = buildDb({ transactions: [tx] });
+    const app = createApp(db);
+    const res = await request(app).post('/api/transactions/a/toggle-paid');
+    expect(res.status).toBe(200);
+    expect(db.data.transactions[0].isPaid).toBe(true);
+    expect(db.data.transactions[0].history[0].label).toBe('Marked Paid');
+  });
+
+  test('given DELETE /api/transactions/:id, then removes that tx', async () => {
+    const tx = { id: 'a', history: [] } as never;
+    const db = buildDb({ transactions: [tx, { ...(tx as object), id: 'b' } as never] });
+    const app = createApp(db);
+    const res = await request(app).delete('/api/transactions/a');
+    expect(res.status).toBe(200);
+    expect(db.data.transactions.map((t) => t.id)).toEqual(['b']);
+  });
+
+  test('given DELETE /api/transactions/:id for missing id, then 404', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const res = await request(app).delete('/api/transactions/missing');
+    expect(res.status).toBe(404);
+  });
+
+  test('given PATCH /api/transactions/series/:groupId, then patches only unpaid txs in that series and strips id/date/cycleKey/created_at/history from updates', async () => {
+    const make = (id: string, isPaid: boolean) =>
+      ({
+        id,
+        name: 'x',
+        amount: 1,
+        typeId: 't1',
+        accountId: 'acc-1',
+        date: '2026-01-01',
+        cycleKey: 'k',
+        isPlanned: true,
+        isPaid,
+        isRecurring: false,
+        recurringGroupId: 'g1',
+        history: [],
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
+      }) as never;
+    const db = buildDb({
+      transactions: [make('a', false), make('b', true), { ...make('c', false), recurringGroupId: 'g2' }],
+    });
+    const app = createApp(db);
+    const res = await request(app).patch('/api/transactions/series/g1').send({
+      updates: { id: 'NEW', date: '1999', cycleKey: 'z', amount: 9 },
+      msg: 'series',
+    });
+    expect(res.status).toBe(200);
+    const a = db.data.transactions.find((t) => t.id === 'a');
+    const b = db.data.transactions.find((t) => t.id === 'b');
+    const c = db.data.transactions.find((t) => t.id === 'c');
+    expect(a?.amount).toBe(9);
+    expect(a?.id).toBe('a');
+    expect(a?.date).toBe('2026-01-01');
+    expect(b?.amount).toBe(1);
+    expect(c?.amount).toBe(1);
+  });
+
+  test('given DELETE /api/transactions/series/:groupId, then removes all txs sharing that group', async () => {
+    const make = (id: string, group?: string) =>
+      ({ id, recurringGroupId: group, history: [] }) as never;
+    const db = buildDb({
+      transactions: [make('a', 'g1'), make('b', 'g1'), make('c', 'g2')],
+    });
+    const app = createApp(db);
+    const res = await request(app).delete('/api/transactions/series/g1');
+    expect(res.status).toBe(200);
+    expect(res.body.removed).toBe(2);
+    expect(db.data.transactions.map((t) => t.id)).toEqual(['c']);
+  });
+
+  test('given POST /api/transactions/:id/break-series, then unsets recurringGroupId on that tx only', async () => {
+    const make = (id: string, group?: string) =>
+      ({ id, recurringGroupId: group, history: [] }) as never;
+    const db = buildDb({ transactions: [make('a', 'g1'), make('b', 'g1')] });
+    const app = createApp(db);
+    const res = await request(app).post('/api/transactions/a/break-series');
+    expect(res.status).toBe(200);
+    expect(db.data.transactions.find((t) => t.id === 'a')?.recurringGroupId).toBeUndefined();
+    expect(db.data.transactions.find((t) => t.id === 'b')?.recurringGroupId).toBe('g1');
+  });
+});
+
 describe('CORS', () => {
   test('given any GET request, then Access-Control-Allow-Origin header is *', async () => {
     const db = buildDb();

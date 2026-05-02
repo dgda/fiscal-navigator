@@ -15,7 +15,7 @@ const SidebarToggle: React.FC<SidebarToggleProps> = (props) => {
     >
       <button
         onClick={onToggle}
-        className={`group relative flex h-14 w-6 items-center justify-center rounded-r-2xl bg-white/80 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] ring-1 ring-black/5 backdrop-blur-xl transition-all duration-500 dark:bg-[#1C1C1E]/80 dark:ring-white/10`}
+        className={`group relative flex h-14 w-6 items-center justify-center rounded-r-2xl bg-white/80 shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] ring-1 ring-black/5 backdrop-blur-xl transition-all duration-500 dark:bg-[#2C2C2E]/80 dark:ring-white/10`}
       >
         <div
           className={`transition-all duration-500 ${isOpen ? 'rotate-180 text-slate-400' : 'rotate-0 text-blue-500'}`}

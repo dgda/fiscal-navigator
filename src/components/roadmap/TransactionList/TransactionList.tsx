@@ -52,7 +52,7 @@ const TransactionList: React.FC<TransactionListProps> = (props) => {
 
   const {
     toggleExecution,
-    sync,
+    replaceTransactions,
     data,
     getFullTypeName,
     checkIsIncome,
@@ -127,7 +127,7 @@ const TransactionList: React.FC<TransactionListProps> = (props) => {
       ref={ref}
       className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4"
     >
-      <div className="sticky top-0 z-[70] -mx-4 mb-2 bg-[#F5F5F7] px-4 py-2 dark:bg-[#0A0A0B]">
+      <div className="sticky top-0 z-[70] -mx-4 mb-2 bg-[#F5F5F7] px-4 py-2 dark:bg-[#1E1E1F]">
         <div className="relative flex items-center">
           <Search className="absolute left-3 h-3.5 w-3.5 text-slate-400" />
           <input
@@ -135,7 +135,7 @@ const TransactionList: React.FC<TransactionListProps> = (props) => {
             placeholder="Search cycle transactions..."
             value={localSearchTerm}
             onChange={(e) => setLocalSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-black/5 bg-white py-2 pl-9 pr-8 text-[11px] placeholder-slate-400 outline-none transition-all focus:ring-2 focus:ring-blue-500/10 dark:border-white/5 dark:bg-[#1C1C1E] dark:text-slate-200"
+            className="w-full rounded-lg border border-black/5 bg-white py-2 pl-9 pr-8 text-[11px] placeholder-slate-400 outline-none transition-all focus:ring-2 focus:ring-blue-500/10 dark:border-white/5 dark:bg-[#2C2C2E] dark:text-slate-200"
           />
           {localSearchTerm && (
             <button
@@ -163,10 +163,7 @@ const TransactionList: React.FC<TransactionListProps> = (props) => {
             );
             const oldIdx = cycleTxs.findIndex((t: Transaction) => t.id === active.id);
             const newIdx = cycleTxs.findIndex((t: Transaction) => t.id === over.id);
-            sync({
-              ...data,
-              transactions: [...otherTxs, ...arrayMove(cycleTxs, oldIdx, newIdx)],
-            });
+            void replaceTransactions([...otherTxs, ...arrayMove(cycleTxs, oldIdx, newIdx)]);
           }
         }}
       >
@@ -203,10 +200,10 @@ const TransactionList: React.FC<TransactionListProps> = (props) => {
               return (
                 <React.Fragment key={tx.id}>
                   {(isAccruedHeader || isOperatingHeader) && (
-                    <div className="sticky top-[49px] z-[60] -mx-4 bg-[#F5F5F7] pb-[5px] pt-2.5 dark:bg-[#0A0A0B]">
+                    <div className="sticky top-[49px] z-[60] -mx-4 bg-[#F5F5F7] pb-[5px] pt-2.5 dark:bg-[#1E1E1F]">
                       <div className="relative flex items-center justify-center">
                         <div className="absolute h-[0.5px] w-full bg-gradient-to-r from-transparent via-black/[0.1] to-transparent dark:via-white/[0.1]" />
-                        <div className="relative flex items-center gap-2 rounded-full border border-black/5 bg-white px-3 py-1 shadow-sm dark:border-white/10 dark:bg-[#1C1C1E]">
+                        <div className="relative flex items-center gap-2 rounded-full border border-black/5 bg-white px-3 py-1 shadow-sm dark:border-white/10 dark:bg-[#2C2C2E]">
                           <span className="text-[7px] font-black uppercase tracking-[0.1em] text-slate-500">
                             {isAccruedHeader ? 'Accrued Expenses' : 'Operating Expenses'}
                           </span>
@@ -216,7 +213,7 @@ const TransactionList: React.FC<TransactionListProps> = (props) => {
                   )}
                   {showDateSeparator && (
                     <div
-                      className={`sticky z-[50] -mx-4 bg-[#F5F5F7] px-5 dark:bg-[#0A0A0B] ${
+                      className={`sticky z-[50] -mx-4 bg-[#F5F5F7] px-5 dark:bg-[#1E1E1F] ${
                         sectionHasHeader
                           ? `top-[83px] pb-2.5 ${!(isAccruedHeader || isOperatingHeader) && 'pt-2.5'}`
                           : 'top-[49px] pb-2.5 pt-2.5'

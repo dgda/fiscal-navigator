@@ -68,7 +68,7 @@ const TransactionCategoriesSection: React.FC<TransactionCategoriesSectionProps> 
     return (
       <div className="relative flex flex-col">
         <div
-          className={`group flex items-center justify-between rounded-xl px-3 py-2 transition-all ${depth === 0 ? 'mb-1 bg-white shadow-sm ring-1 ring-black/5 dark:bg-[#1C1C1E]' : 'hover:bg-black/[0.02] dark:hover:bg-white/5'}`}
+          className={`group flex items-center justify-between rounded-xl px-3 py-2 transition-all ${depth === 0 ? 'mb-1 bg-white shadow-sm ring-1 ring-black/5 dark:bg-[#2C2C2E]' : 'hover:bg-black/[0.02] dark:hover:bg-white/5'}`}
         >
           <div className="flex min-w-0 items-center gap-2">
             <button

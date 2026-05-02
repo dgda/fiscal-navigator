@@ -1,13 +1,24 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { TreasuryData, Transaction, Account, PayoutConfig, UserPreferences } from '../types';
+import {
+  TreasuryData,
+  Transaction,
+  TransactionType,
+  Account,
+  PayoutConfig,
+  UserPreferences,
+} from '../types';
 import { API_URL } from '../constants';
 
 interface TreasuryContextType {
   data: TreasuryData;
   loading: boolean;
+  /** @deprecated Prefer the focused mutation methods below. Kept for legacy/escape-hatch use. */
   sync: (newData: TreasuryData) => Promise<void>;
   updatePreferences: (updates: Partial<UserPreferences>) => Promise<void>;
   updatePayoutConfig: (updates: Partial<PayoutConfig>) => Promise<void>;
+  updateBaseSalary: (baseSalary: number) => Promise<void>;
+  updateAccounts: (accounts: Account[]) => Promise<void>;
+  updateTypes: (types: TransactionType[]) => Promise<void>;
   computedAccounts: Account[];
   totalLiquidity: number;
   renderTypeOptions: () => React.ReactNode;
@@ -19,6 +30,9 @@ interface TreasuryContextType {
   deleteSeries: (groupId: string) => void;
   breakSeriesLink: (id: string) => void;
   toggleExecution: (id: string) => void;
+  createTransactions: (transactions: Transaction[]) => Promise<void>;
+  replaceTransactions: (transactions: Transaction[]) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
   // Reconciliation Global State
   reconcileRequest: {
     shortfall: number;
@@ -75,41 +89,108 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       });
   }, []);
 
-  // Sync to Server
-  const sync = useCallback(async (newData: TreasuryData) => {
-    setData(newData); // Optimistic Update
-    try {
-      await fetch(`${API_URL}/api/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newData),
-      });
-    } catch (err) {
-      console.error('Sync failed', err);
-    }
-  }, []);
+  // Generic JSON fetch helper. Optimistic update of local state has already happened by the caller.
+  const apiCall = useCallback(
+    async (path: string, init: RequestInit) => {
+      try {
+        await fetch(`${API_URL}${path}`, {
+          ...init,
+          headers: { 'Content-Type': 'application/json', ...(init.headers ?? {}) },
+        });
+      } catch (err) {
+        console.error(`Request failed: ${init.method ?? 'GET'} ${path}`, err);
+      }
+    },
+    [],
+  );
 
-  // --- UPDATED: Atomic Preference Update ---
+  // Legacy escape hatch: replaces the entire DB document. Prefer focused methods.
+  const sync = useCallback(
+    async (newData: TreasuryData) => {
+      setData(newData);
+      await apiCall('/api/update', { method: 'POST', body: JSON.stringify(newData) });
+    },
+    [apiCall],
+  );
+
   const updatePreferences = useCallback(
     async (updates: Partial<UserPreferences>) => {
       if (!data) return;
       const newPreferences = { ...data.preferences, ...updates };
-      const nextData = { ...data, preferences: newPreferences };
-      await sync(nextData);
+      setData({ ...data, preferences: newPreferences });
+      await apiCall('/api/preferences', { method: 'PATCH', body: JSON.stringify(updates) });
     },
-    [data, sync],
+    [data, apiCall],
   );
 
   const updatePayoutConfig = useCallback(
     async (updates: Partial<PayoutConfig>) => {
       if (!data) return;
-      const nextData = {
-        ...data,
-        payoutConfig: { ...data.payoutConfig, ...updates },
-      };
-      await sync(nextData);
+      const newPayoutConfig = { ...data.payoutConfig, ...updates };
+      setData({ ...data, payoutConfig: newPayoutConfig });
+      await apiCall('/api/payout-config', { method: 'PATCH', body: JSON.stringify(updates) });
     },
-    [data, sync],
+    [data, apiCall],
+  );
+
+  const updateBaseSalary = useCallback(
+    async (baseSalary: number) => {
+      if (!data) return;
+      setData({ ...data, baseSalary });
+      await apiCall('/api/base-salary', { method: 'PATCH', body: JSON.stringify({ baseSalary }) });
+    },
+    [data, apiCall],
+  );
+
+  const updateAccounts = useCallback(
+    async (accounts: Account[]) => {
+      if (!data) return;
+      setData({ ...data, accounts });
+      await apiCall('/api/accounts', { method: 'PUT', body: JSON.stringify({ accounts }) });
+    },
+    [data, apiCall],
+  );
+
+  const updateTypes = useCallback(
+    async (types: TransactionType[]) => {
+      if (!data) return;
+      setData({ ...data, types });
+      await apiCall('/api/types', { method: 'PUT', body: JSON.stringify({ types }) });
+    },
+    [data, apiCall],
+  );
+
+  const createTransactions = useCallback(
+    async (transactions: Transaction[]) => {
+      if (!data) return;
+      setData({ ...data, transactions: [...data.transactions, ...transactions] });
+      await apiCall('/api/transactions', {
+        method: 'POST',
+        body: JSON.stringify({ transactions }),
+      });
+    },
+    [data, apiCall],
+  );
+
+  const replaceTransactions = useCallback(
+    async (transactions: Transaction[]) => {
+      if (!data) return;
+      setData({ ...data, transactions });
+      await apiCall('/api/transactions', {
+        method: 'PUT',
+        body: JSON.stringify({ transactions }),
+      });
+    },
+    [data, apiCall],
+  );
+
+  const deleteTransaction = useCallback(
+    async (id: string) => {
+      if (!data) return;
+      setData({ ...data, transactions: data.transactions.filter((t) => t.id !== id) });
+      await apiCall(`/api/transactions/${id}`, { method: 'DELETE' });
+    },
+    [data, apiCall],
   );
 
   // --- HELPER FUNCTIONS ---
@@ -203,7 +284,11 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         history: [...t.history, { snapshot, timestamp: now, label: msg }],
       };
     });
-    sync({ ...data, transactions: nextTxs });
+    setData({ ...data, transactions: nextTxs });
+    void apiCall(`/api/transactions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ updates, msg }),
+    });
   };
 
   const toggleExecution = (id: string) => {
@@ -226,7 +311,8 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ],
       };
     });
-    sync({ ...data, transactions: nextTxs });
+    setData({ ...data, transactions: nextTxs });
+    void apiCall(`/api/transactions/${id}/toggle-paid`, { method: 'POST' });
   };
 
   const updateSeries = (groupId: string, baseUpdates: Partial<Transaction>, msg: string) => {
@@ -262,13 +348,18 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
     });
 
-    sync({ ...data, transactions: nextTxs });
+    setData({ ...data, transactions: nextTxs });
+    void apiCall(`/api/transactions/series/${groupId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ updates: safeUpdates, msg }),
+    });
   };
 
   const deleteSeries = (groupId: string) => {
     if (!data) return;
     const nextTxs = data.transactions.filter((t) => t.recurringGroupId !== groupId);
-    sync({ ...data, transactions: nextTxs });
+    setData({ ...data, transactions: nextTxs });
+    void apiCall(`/api/transactions/series/${groupId}`, { method: 'DELETE' });
   };
 
   const breakSeriesLink = (id: string) => {
@@ -276,12 +367,13 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const nextTxs = data.transactions.map((t) =>
       t.id === id ? { ...t, recurringGroupId: undefined } : t,
     );
-    sync({ ...data, transactions: nextTxs });
+    setData({ ...data, transactions: nextTxs });
+    void apiCall(`/api/transactions/${id}/break-series`, { method: 'POST' });
   };
 
   if (loading || !data) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#F5F5F7] dark:bg-[#0A0A0B]">
+      <div className="flex h-screen w-screen items-center justify-center bg-[#F5F5F7] dark:bg-[#1E1E1F]">
         <div className="animate-pulse text-[10px] font-black uppercase tracking-widest text-slate-400">
           Loading Treasury...
         </div>
@@ -297,6 +389,9 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         sync,
         updatePreferences,
         updatePayoutConfig,
+        updateBaseSalary,
+        updateAccounts,
+        updateTypes,
         computedAccounts,
         totalLiquidity,
         renderTypeOptions,
@@ -308,6 +403,9 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         deleteSeries,
         breakSeriesLink,
         toggleExecution,
+        createTransactions,
+        replaceTransactions,
+        deleteTransaction,
         reconcileRequest,
         requestReconcile,
         clearReconcileRequest,

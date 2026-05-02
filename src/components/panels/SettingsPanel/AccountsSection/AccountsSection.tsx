@@ -111,7 +111,7 @@ const AccountsSection: React.FC<AccountsSectionProps> = (props) => {
             return (
               <div
                 key={acc.id}
-                className="group rounded-2xl border border-black/5 bg-white p-4 transition-all hover:shadow-md dark:border-white/5 dark:bg-[#1C1C1E]"
+                className="group rounded-2xl border border-black/5 bg-white p-4 transition-all hover:shadow-md dark:border-white/5 dark:bg-[#2C2C2E]"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex min-w-0 items-center gap-3">

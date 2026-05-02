@@ -30,7 +30,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
   });
 
   return (
-    <nav className="relative z-30 flex h-14 w-full shrink-0 items-center justify-between border-b border-black/5 bg-[#FBFBFD]/80 px-4 backdrop-blur-2xl transition-colors dark:border-white/5 dark:bg-[#141416]/80">
+    <nav className="relative z-30 flex h-14 w-full shrink-0 items-center justify-between border-b border-black/5 bg-[#FBFBFD]/80 px-4 backdrop-blur-2xl transition-colors dark:border-white/5 dark:bg-[#28282A]/80">
       <div className="flex items-center gap-6">
         {/* BRAND IDENTITY */}
         <div className="flex items-center gap-3 pr-4">
@@ -54,7 +54,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
           {computedAccounts.map((acc) => (
             <div
               key={acc.id}
-              className="group flex cursor-default items-center gap-2 rounded-full border border-black/5 bg-white px-3 py-1 shadow-sm transition-all hover:border-black/10 hover:shadow-md dark:border-white/5 dark:bg-[#1C1C1E] dark:hover:border-white/10"
+              className="group flex cursor-default items-center gap-2 rounded-full border border-black/5 bg-white px-3 py-1 shadow-sm transition-all hover:border-black/10 hover:shadow-md dark:border-white/5 dark:bg-[#2C2C2E] dark:hover:border-white/10"
             >
               <div
                 className="h-1.5 w-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.3)]"
@@ -139,7 +139,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
         <div className="flex items-center gap-3">
           {/* Theme & View Toggles remain identical ... */}
           {/* ... */}
-          <div className="flex items-center rounded-full border border-black/5 bg-white p-0.5 shadow-sm dark:border-white/5 dark:bg-[#1C1C1E]">
+          <div className="flex items-center rounded-full border border-black/5 bg-white p-0.5 shadow-sm dark:border-white/5 dark:bg-[#2C2C2E]">
             <button
               onClick={() => setUseSystemDefault(true)}
               className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
@@ -167,7 +167,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
             </button>
           </div>
 
-          <div className="flex items-center rounded-full border border-black/5 bg-white p-0.5 shadow-sm dark:border-white/5 dark:bg-[#1C1C1E]">
+          <div className="flex items-center rounded-full border border-black/5 bg-white p-0.5 shadow-sm dark:border-white/5 dark:bg-[#2C2C2E]">
             <button
               onClick={() => setActiveView('roadmap')}
               className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${

@@ -19,7 +19,7 @@ const DeleteModal: React.FC<DeleteModalProps> = (props) => {
           onClick={() => setDeleteCandidate(null)}
         >
           <div
-            className="animate-in zoom-in-95 w-[280px] overflow-hidden rounded-[24px] bg-white/95 shadow-2xl ring-1 ring-black/5 backdrop-blur-xl dark:bg-[#1C1C1E]/95 dark:ring-white/10"
+            className="animate-in zoom-in-95 w-[280px] overflow-hidden rounded-[24px] bg-white/95 shadow-2xl ring-1 ring-black/5 backdrop-blur-xl dark:bg-[#2C2C2E]/95 dark:ring-white/10"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col items-center p-6 text-center">

@@ -23,7 +23,7 @@ const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
   highlightId,
   onHighlightComplete,
 }) => {
-  const { sync, deleteSeries, data } = useTreasury();
+  const { deleteTransaction, deleteSeries } = useTreasury();
   const { roadmap, groupedCycleOptions } = useRoadmap(filter);
   const [activeMonthSummary, setActiveMonthSummary] = useState<string | null>(null);
   const [isOpening, setIsOpening] = useState(false);
@@ -55,10 +55,7 @@ const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
   const executeDelete = (mode: 'one' | 'series') => {
     if (!deleteCandidate) return;
     if (mode === 'one') {
-      sync({
-        ...data,
-        transactions: data.transactions.filter((t: Transaction) => t.id !== deleteCandidate.id),
-      });
+      void deleteTransaction(deleteCandidate.id);
     } else if (deleteCandidate.recurringGroupId) {
       deleteSeries(deleteCandidate.recurringGroupId);
     }
@@ -105,7 +102,7 @@ const RoadmapSpreadsheet: React.FC<RoadmapSpreadsheetProps> = ({
   }, [groupedCycleOptions]);
 
   return (
-    <div className="relative flex h-full w-full overflow-hidden bg-[#F5F5F7] dark:bg-[#000000]">
+    <div className="relative flex h-full w-full overflow-hidden bg-[#F5F5F7] dark:bg-[#1E1E1F]">
       {/* HORIZONTAL SCROLL CONTAINER: Set to h-full to capture viewport height */}
       <div
         ref={scrollContainerRef}

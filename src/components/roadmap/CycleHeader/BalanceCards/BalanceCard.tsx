@@ -43,7 +43,7 @@ const BalanceCard: React.FC<BalanceCardProps> = (props) => {
       <div className="pointer-events-none absolute -top-1 left-1/2 z-[1000] w-max -translate-x-1/2 -translate-y-full scale-95 opacity-0 transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
         {(!isFuture || (isFuture && !isBlue)) && (
           <>
-            <div className="rounded-2xl border border-black/5 bg-white p-3 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#1C1C1E]">
+            <div className="rounded-2xl border border-black/5 bg-white p-3 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#2C2C2E]">
               <div
                 className={`mb-1.5 border-b border-black/5 pb-1 text-[8px] font-black uppercase tracking-widest dark:border-white/5 ${isBlue ? styles.textBlue : styles.textTeal}`}
               >
@@ -66,7 +66,7 @@ const BalanceCard: React.FC<BalanceCardProps> = (props) => {
                 </div>
               </div>
             </div>
-            <div className="mx-auto h-2 w-2 -translate-y-1 rotate-45 border-b border-r border-black/5 bg-white/90 dark:border-white/10 dark:bg-[#1C1C1E]/90" />
+            <div className="mx-auto h-2 w-2 -translate-y-1 rotate-45 border-b border-r border-black/5 bg-white/90 dark:border-white/10 dark:bg-[#2C2C2E]/90" />
           </>
         )}
       </div>

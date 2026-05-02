@@ -10,7 +10,7 @@ interface SidebarSettingsViewProps {
 
 const SidebarSettingsView: React.FC<SidebarSettingsViewProps> = (props) => {
   const { setActiveView, inputGroupClass, inputBaseClass } = props;
-  const { data, sync } = useTreasury();
+  const { data, updateBaseSalary } = useTreasury();
 
   return (
     <div className="space-y-6">
@@ -21,7 +21,7 @@ const SidebarSettingsView: React.FC<SidebarSettingsViewProps> = (props) => {
         <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" /> Return
         to Roadmap
       </button>
-      <div className="rounded-[14px] border border-black/5 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-[#1C1C1E]">
+      <div className="rounded-[14px] border border-black/5 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-[#2C2C2E]">
         <p className="mb-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
           <ShieldCheck size={12} /> Core Infrastructure
         </p>
@@ -36,7 +36,7 @@ const SidebarSettingsView: React.FC<SidebarSettingsViewProps> = (props) => {
             <input
               type="number"
               defaultValue={data.baseSalary}
-              onBlur={(e) => sync({ ...data, baseSalary: Number(e.target.value) })}
+              onBlur={(e) => updateBaseSalary(Number(e.target.value))}
               className={`${inputBaseClass} pl-8`}
             />
           </div>
