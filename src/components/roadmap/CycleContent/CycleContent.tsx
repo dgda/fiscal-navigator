@@ -29,11 +29,11 @@ const CycleContent: React.FC<CycleContentProps> = (props) => {
           // Layout & Base
           'relative flex h-full w-[432px] flex-col overflow-visible',
           'bg-[#F5F5F7] border-r hover:z-50',
-          'dark:border-white/5 dark:bg-[#0A0A0B]',
+          'dark:border-white/5 dark:bg-[#1E1E1F]',
 
           // Status: Future
           CYCLE_STATUS === CycleStatus.FUTURE &&
-            'opacity-50 brightness-[0.4] dark:opacity-50 dark:brightness-[0.30]',
+            'opacity-55 brightness-[0.75] dark:opacity-75 dark:brightness-[0.75]',
 
           // Status: Past
           CYCLE_STATUS === CycleStatus.PAST && 'opacity-65 brightness-[0.95] dark:brightness-95',

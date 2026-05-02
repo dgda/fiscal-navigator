@@ -41,7 +41,7 @@ export const BalanceReconciliationModal: React.FC<BalanceReconciliationModalProp
       onClick={onClose}
     >
       <div
-        className="animate-in zoom-in-95 relative w-full max-w-[500px] overflow-hidden rounded-[24px] bg-[#FBFBFD]/90 shadow-2xl ring-1 ring-black/5 duration-300 dark:bg-[#1C1C1E]/90 dark:ring-white/10"
+        className="animate-in zoom-in-95 relative w-full max-w-[500px] overflow-hidden rounded-[24px] bg-[#FBFBFD]/90 shadow-2xl ring-1 ring-black/5 duration-300 dark:bg-[#2C2C2E]/90 dark:ring-white/10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

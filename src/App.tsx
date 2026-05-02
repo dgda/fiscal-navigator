@@ -50,7 +50,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-100 dark:bg-[#0A0A0B]">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-100 dark:bg-[#1E1E1F]">
       <Navbar activeView={activeView} setActiveView={setActiveView} />
 
       <div className="flex flex-1 overflow-hidden">

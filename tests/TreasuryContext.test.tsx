@@ -50,11 +50,25 @@ const tx = (p: Partial<Transaction>): Transaction => ({
 let fetchMock: ReturnType<typeof vi.fn>;
 let postedBodies: unknown[];
 
+interface CapturedRequest {
+  url: string;
+  method: string;
+  body: unknown;
+}
+
+let capturedRequests: CapturedRequest[];
+
 function mockFetchWith(seed: TreasuryData) {
   postedBodies = [];
+  capturedRequests = [];
   fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
-    if (init?.method === 'POST') {
-      postedBodies.push(JSON.parse(init.body as string));
+    const method = init?.method ?? 'GET';
+    if (method !== 'GET') {
+      const body = init?.body ? JSON.parse(init.body as string) : undefined;
+      capturedRequests.push({ url, method, body });
+      if (method === 'POST' && url.endsWith('/api/update')) {
+        postedBodies.push(body);
+      }
       return new Response(JSON.stringify({ success: true }), { status: 200 });
     }
     return new Response(JSON.stringify(seed), { status: 200 });
@@ -210,7 +224,7 @@ describe('TreasuryContext mutations — commitUpdate', () => {
     expect(tCur?.history[0].snapshot).not.toHaveProperty('history');
   });
 
-  test('given commitUpdate, then the call POSTs the updated treasury to /api/update', async () => {
+  test('given commitUpdate, then a focused PATCH /api/transactions/:id is sent with { updates, msg }', async () => {
     const { result } = await renderTreasury({
       ...baseData,
       transactions: [tx({ id: 'a', amount: 10 })],
@@ -218,9 +232,10 @@ describe('TreasuryContext mutations — commitUpdate', () => {
     await act(async () => {
       result.current.commitUpdate('a', { amount: 22 }, 'msg');
     });
-    expect(postedBodies.length).toBeGreaterThanOrEqual(1);
-    const last = postedBodies[postedBodies.length - 1] as TreasuryData;
-    expect(last.transactions.find((t) => t.id === 'a')?.amount).toBe(22);
+    const req = capturedRequests.find((r) => r.url.endsWith('/api/transactions/a'));
+    expect(req).toBeDefined();
+    expect(req!.method).toBe('PATCH');
+    expect(req!.body).toEqual({ updates: { amount: 22 }, msg: 'msg' });
   });
 });
 
@@ -348,6 +363,173 @@ describe('TreasuryContext mutations — updatePreferences / updatePayoutConfig',
     });
     expect(result.current.data.payoutConfig.archetype).toBe('monthly');
     expect(result.current.data.payoutConfig.fixedIntervalDays).toBe(14);
+  });
+});
+
+describe('TreasuryContext modular endpoints', () => {
+  test('given updatePreferences, then PATCH /api/preferences is called with the partial body', async () => {
+    const { result } = await renderTreasury();
+    await act(async () => {
+      await result.current.updatePreferences({ theme: 'dark' });
+    });
+    const req = capturedRequests.find((r) => r.url.endsWith('/api/preferences'));
+    expect(req).toBeDefined();
+    expect(req!.method).toBe('PATCH');
+    expect(req!.body).toEqual({ theme: 'dark' });
+  });
+
+  test('given updatePayoutConfig, then PATCH /api/payout-config is called with the partial body', async () => {
+    const { result } = await renderTreasury();
+    await act(async () => {
+      await result.current.updatePayoutConfig({ archetype: 'monthly' });
+    });
+    const req = capturedRequests.find((r) => r.url.endsWith('/api/payout-config'));
+    expect(req).toBeDefined();
+    expect(req!.method).toBe('PATCH');
+    expect(req!.body).toEqual({ archetype: 'monthly' });
+  });
+
+  test('given updateBaseSalary, then PATCH /api/base-salary is called with { baseSalary }', async () => {
+    const { result } = await renderTreasury();
+    await act(async () => {
+      await result.current.updateBaseSalary(123);
+    });
+    const req = capturedRequests.find((r) => r.url.endsWith('/api/base-salary'));
+    expect(req).toBeDefined();
+    expect(req!.method).toBe('PATCH');
+    expect(req!.body).toEqual({ baseSalary: 123 });
+  });
+
+  test('given updateAccounts, then PUT /api/accounts is called with { accounts }', async () => {
+    const { result } = await renderTreasury();
+    await act(async () => {
+      await result.current.updateAccounts([
+        { id: 'x', name: 'X', color: '#000', startingBalance: 0 },
+      ]);
+    });
+    const req = capturedRequests.find((r) => r.url.endsWith('/api/accounts'));
+    expect(req).toBeDefined();
+    expect(req!.method).toBe('PUT');
+    expect(req!.body).toEqual({
+      accounts: [{ id: 'x', name: 'X', color: '#000', startingBalance: 0 }],
+    });
+  });
+
+  test('given updateTypes, then PUT /api/types is called with { types }', async () => {
+    const { result } = await renderTreasury();
+    await act(async () => {
+      await result.current.updateTypes([{ id: 'tnew', name: 'New', parent_type: null }]);
+    });
+    const req = capturedRequests.find((r) => r.url.endsWith('/api/types'));
+    expect(req).toBeDefined();
+    expect(req!.method).toBe('PUT');
+    expect(req!.body).toEqual({
+      types: [{ id: 'tnew', name: 'New', parent_type: null }],
+    });
+  });
+
+  test('given createTransactions, then POST /api/transactions appends the batch', async () => {
+    const { result } = await renderTreasury();
+    const batch = [tx({ id: 'new1' }), tx({ id: 'new2' })];
+    await act(async () => {
+      await result.current.createTransactions(batch);
+    });
+    const req = capturedRequests.find(
+      (r) => r.method === 'POST' && r.url.endsWith('/api/transactions'),
+    );
+    expect(req).toBeDefined();
+    expect((req!.body as { transactions: Transaction[] }).transactions).toHaveLength(2);
+    expect(result.current.data.transactions).toHaveLength(2);
+  });
+
+  test('given replaceTransactions, then PUT /api/transactions replaces the entire list', async () => {
+    const { result } = await renderTreasury({ ...baseData, transactions: [tx({ id: 'old' })] });
+    await act(async () => {
+      await result.current.replaceTransactions([tx({ id: 'new' })]);
+    });
+    const req = capturedRequests.find(
+      (r) => r.method === 'PUT' && r.url.endsWith('/api/transactions'),
+    );
+    expect(req).toBeDefined();
+    expect(result.current.data.transactions.map((t) => t.id)).toEqual(['new']);
+  });
+
+  test('given deleteTransaction, then DELETE /api/transactions/:id is called and the tx is removed locally', async () => {
+    const { result } = await renderTreasury({
+      ...baseData,
+      transactions: [tx({ id: 'a' }), tx({ id: 'b' })],
+    });
+    await act(async () => {
+      await result.current.deleteTransaction('a');
+    });
+    const req = capturedRequests.find(
+      (r) => r.method === 'DELETE' && r.url.endsWith('/api/transactions/a'),
+    );
+    expect(req).toBeDefined();
+    expect(result.current.data.transactions.map((t) => t.id)).toEqual(['b']);
+  });
+
+  test('given toggleExecution, then POST /api/transactions/:id/toggle-paid is called', async () => {
+    const { result } = await renderTreasury({
+      ...baseData,
+      transactions: [tx({ id: 'a', isPaid: false })],
+    });
+    await act(async () => {
+      result.current.toggleExecution('a');
+    });
+    const req = capturedRequests.find((r) => r.url.endsWith('/api/transactions/a/toggle-paid'));
+    expect(req).toBeDefined();
+    expect(req!.method).toBe('POST');
+  });
+
+  test('given updateSeries, then PATCH /api/transactions/series/:groupId is called with stripped { updates, msg }', async () => {
+    const { result } = await renderTreasury({
+      ...baseData,
+      transactions: [tx({ id: 'a', recurringGroupId: 'g1' })],
+    });
+    await act(async () => {
+      result.current.updateSeries(
+        'g1',
+        { id: 'NEW' as never, date: '1999-01-01', amount: 5 },
+        'edit',
+      );
+    });
+    const req = capturedRequests.find((r) =>
+      r.url.endsWith('/api/transactions/series/g1'),
+    );
+    expect(req).toBeDefined();
+    expect(req!.method).toBe('PATCH');
+    expect(req!.body).toEqual({ updates: { amount: 5 }, msg: 'edit' });
+  });
+
+  test('given deleteSeries, then DELETE /api/transactions/series/:groupId is called', async () => {
+    const { result } = await renderTreasury({
+      ...baseData,
+      transactions: [tx({ id: 'a', recurringGroupId: 'g1' })],
+    });
+    await act(async () => {
+      result.current.deleteSeries('g1');
+    });
+    const req = capturedRequests.find((r) =>
+      r.url.endsWith('/api/transactions/series/g1'),
+    );
+    expect(req).toBeDefined();
+    expect(req!.method).toBe('DELETE');
+  });
+
+  test('given breakSeriesLink, then POST /api/transactions/:id/break-series is called', async () => {
+    const { result } = await renderTreasury({
+      ...baseData,
+      transactions: [tx({ id: 'a', recurringGroupId: 'g1' })],
+    });
+    await act(async () => {
+      result.current.breakSeriesLink('a');
+    });
+    const req = capturedRequests.find((r) =>
+      r.url.endsWith('/api/transactions/a/break-series'),
+    );
+    expect(req).toBeDefined();
+    expect(req!.method).toBe('POST');
   });
 });
 

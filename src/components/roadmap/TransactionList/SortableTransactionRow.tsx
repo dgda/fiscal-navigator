@@ -71,7 +71,7 @@ const SortableTransactionRow = (props: SortableTransactionRowProps) => {
   };
 
   const baseClasses =
-    'bg-white dark:bg-[#1C1C1E] ' +
+    'bg-white dark:bg-[#2C2C2E] ' +
     'border-y border-r border-y-slate-100 border-r-slate-100 dark:border-y-white/5 dark:border-r-white/5 ' +
     'shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ' +
     'hover:-translate-y-[1px] hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)] ' +

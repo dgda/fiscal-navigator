@@ -10,7 +10,7 @@ const MonthHeader: React.FC<MonthHeaderProps> = (props) => {
   const { monthLabel, setActiveMonthSummary } = props;
 
   return (
-    <div className="sticky top-0 z-[40] flex shrink-0 items-center justify-between border-b border-black/[0.04] bg-[#F5F5F7]/80 px-5 py-3 backdrop-blur-xl dark:border-white/5 dark:bg-[#141416]/80">
+    <div className="sticky top-0 z-[40] flex shrink-0 items-center justify-between border-b border-black/[0.04] bg-[#F5F5F7]/80 px-5 py-3 backdrop-blur-xl dark:border-white/5 dark:bg-[#28282A]/80">
       <div className="flex items-center gap-2.5">
         <div className="flex h-6 w-6 items-center justify-center rounded-md bg-white text-slate-900 shadow-sm dark:bg-white/10 dark:text-slate-300">
           <CalendarDays size={12} />

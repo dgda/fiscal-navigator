@@ -58,7 +58,8 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
   // Added requestReconcile and checkIsIncome from TreasuryContext
   const {
     data,
-    sync,
+    createTransactions,
+    replaceTransactions,
     checkIsTransfer,
     checkIsIncome,
     computedAccounts,
@@ -190,8 +191,18 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
 
       const projectedAfter = currentNet - cycleImpact;
 
-      const finalizeSync = (txList: Transaction[]) => {
-        sync({ ...data, transactions: [...txList, ...batch] });
+      const finalizeSyncAfterReconcile = (adjustedTxs: Transaction[]) => {
+        // Reconciliation produced a fully adjusted transactions list; replace + the new batch on top.
+        void replaceTransactions([...adjustedTxs, ...batch]);
+        afterCommit();
+      };
+
+      const finalizeAppend = () => {
+        void createTransactions(batch);
+        afterCommit();
+      };
+
+      function afterCommit() {
         onCommitSuccess(primaryId);
         formElement.reset();
         setSelectedTypeId('');
@@ -201,23 +212,20 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
         setRecurrenceInterval(1);
         setRecurrenceUnit(RecurrenceUnit.MONTHS);
         transactionNameInputRef?.current?.focus();
-      };
+      }
 
-      // Trigger reconciliation if balance becomes negative (and it's not income/transfer)
       if (!isIncome && !isTransfer && projectedAfter < 0) {
         requestReconcile(
           Math.abs(projectedAfter),
           baseCycleKey,
           (_adjustments, updatedTransactions) => {
-            // CRITICAL: Use the freshly adjusted transactions list provided by the modal
-            finalizeSync(updatedTransactions);
+            finalizeSyncAfterReconcile(updatedTransactions);
           },
         );
         return;
       }
 
-      // Otherwise, proceed immediately with the current transaction list
-      finalizeSync(data.transactions);
+      finalizeAppend();
     } catch (err) {
       console.error('Commit Failed', err);
     }
@@ -298,7 +306,7 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
               required
             >
               {Object.entries(groupedCycleOptions).map(([m, c]) => (
-                <optgroup key={m} label={m} className="dark:bg-[#1A1A1A]">
+                <optgroup key={m} label={m} className="dark:bg-[#28282A]">
                   {c.map((o) => (
                     <option key={o.key} value={o.key}>
                       {o.display} ({o.dateLabel})
@@ -373,7 +381,7 @@ const SidebarNewTransactionSection: React.FC<SidebarNewTransactionSectionProps> 
           </div>
         )}
 
-        <div className="mt-4 overflow-hidden rounded-[12px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5 dark:bg-[#1C1C1E] dark:ring-white/10">
+        <div className="mt-4 overflow-hidden rounded-[12px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5 dark:bg-[#2C2C2E] dark:ring-white/10">
           <label className="group flex cursor-pointer items-center justify-between px-3.5 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-white/5">
             <div className="flex items-center gap-3">
               <div

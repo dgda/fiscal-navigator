@@ -13,11 +13,11 @@ import RoadmapSpreadsheet from '../src/components/roadmap/RoadmapSpreadsheet';
 import { FilterMode } from '../src/hooks/useRoadmap';
 import type { Transaction, TreasuryData } from '../src/types';
 
-const sync = vi.fn();
+const deleteTransaction = vi.fn();
 const deleteSeries = vi.fn();
 const toggleExecution = vi.fn();
 let mockTreasury: {
-  sync: typeof sync;
+  deleteTransaction: typeof deleteTransaction;
   deleteSeries: typeof deleteSeries;
   toggleExecution: typeof toggleExecution;
   data: TreasuryData;
@@ -106,7 +106,7 @@ vi.mock('../src/hooks/useRoadmap', async () => {
 const setupTreasury = (transactions: Transaction[]) => {
   const accounts = [{ id: 'a1', name: 'Bank', color: '#000', startingBalance: 0, balance: 0 }];
   mockTreasury = {
-    sync,
+    deleteTransaction,
     deleteSeries,
     toggleExecution,
     data: {
@@ -142,7 +142,7 @@ const openDeleteModalFor = (txId: string) => {
 };
 
 beforeEach(() => {
-  sync.mockClear();
+  deleteTransaction.mockClear();
   deleteSeries.mockClear();
 });
 
@@ -152,7 +152,7 @@ afterEach(() => {
 });
 
 describe('RoadmapSpreadsheet', () => {
-  test('given a single (non-recurring) tx delete is confirmed, then sync is called with that tx filtered out', () => {
+  test('given a single (non-recurring) tx delete is confirmed, then deleteTransaction is called with that tx id', () => {
     setupTreasury([seedTx({ id: 'tx-1' }), seedTx({ id: 'tx-2' })]);
     render(
       <RoadmapSpreadsheet
@@ -164,10 +164,8 @@ describe('RoadmapSpreadsheet', () => {
     );
     openDeleteModalFor('tx-1');
     fireEvent.click(screen.getByRole('button', { name: /delete occurrence/i }));
-    expect(sync).toHaveBeenCalledTimes(1);
+    expect(deleteTransaction).toHaveBeenCalledWith('tx-1');
     expect(deleteSeries).not.toHaveBeenCalled();
-    const synced = sync.mock.calls[0][0] as TreasuryData;
-    expect(synced.transactions.map((t) => t.id)).toEqual(['tx-2']);
   });
 
   test('given a recurring tx delete is confirmed via "Delete Series", then deleteSeries is called with the recurringGroupId', () => {
@@ -183,10 +181,10 @@ describe('RoadmapSpreadsheet', () => {
     openDeleteModalFor('tx-1');
     fireEvent.click(screen.getByRole('button', { name: /delete series/i }));
     expect(deleteSeries).toHaveBeenCalledWith('g1');
-    expect(sync).not.toHaveBeenCalled();
+    expect(deleteTransaction).not.toHaveBeenCalled();
   });
 
-  test('given a recurring tx delete is confirmed via "Delete Occurrence", then sync is called (single mode preferred over series)', () => {
+  test('given a recurring tx delete is confirmed via "Delete Occurrence", then deleteTransaction is called (single mode preferred over series)', () => {
     setupTreasury([
       seedTx({ id: 'tx-1', recurringGroupId: 'g1' }),
       seedTx({ id: 'tx-2', recurringGroupId: 'g1' }),
@@ -201,10 +199,8 @@ describe('RoadmapSpreadsheet', () => {
     );
     openDeleteModalFor('tx-1');
     fireEvent.click(screen.getByRole('button', { name: /delete occurrence/i }));
-    expect(sync).toHaveBeenCalledTimes(1);
+    expect(deleteTransaction).toHaveBeenCalledWith('tx-1');
     expect(deleteSeries).not.toHaveBeenCalled();
-    const synced = sync.mock.calls[0][0] as TreasuryData;
-    expect(synced.transactions.map((t) => t.id)).toEqual(['tx-2']);
   });
 
   test('given a delete is cancelled, then no db calls happen', () => {
@@ -219,7 +215,7 @@ describe('RoadmapSpreadsheet', () => {
     );
     openDeleteModalFor('tx-1');
     fireEvent.click(screen.getByRole('button', { name: /^cancel$/i }));
-    expect(sync).not.toHaveBeenCalled();
+    expect(deleteTransaction).not.toHaveBeenCalled();
     expect(deleteSeries).not.toHaveBeenCalled();
   });
 });

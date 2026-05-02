@@ -41,7 +41,7 @@ const SidebarTimelineSection: React.FC<SidebarTimelineSectionProps> = (props) =>
             onClick={() => setFilterMode(m)}
             className={`flex-1 rounded-[7px] py-1.5 text-[10px] font-bold uppercase tracking-wide transition-all duration-200 ${
               filterMode === m
-                ? 'bg-white text-slate-900 shadow-sm dark:bg-[#2D2D2D] dark:text-white dark:shadow-black/20'
+                ? 'bg-white text-slate-900 shadow-sm dark:bg-[#2C2C2E] dark:text-white dark:shadow-black/20'
                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
             }`}
           >

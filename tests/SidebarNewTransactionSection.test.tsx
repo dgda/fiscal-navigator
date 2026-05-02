@@ -11,7 +11,8 @@ vi.mock('uuid', () => {
   return { v4: () => `uuid-${++n}` };
 });
 
-const sync = vi.fn();
+const createTransactions = vi.fn();
+const replaceTransactions = vi.fn();
 const requestReconcile = vi.fn();
 const onCommitSuccess = vi.fn();
 const checkIsTransfer = vi.fn(() => false);
@@ -19,7 +20,8 @@ const checkIsIncome = vi.fn(() => false);
 
 let mockTreasury: {
   data: TreasuryData;
-  sync: typeof sync;
+  createTransactions: typeof createTransactions;
+  replaceTransactions: typeof replaceTransactions;
   checkIsTransfer: typeof checkIsTransfer;
   checkIsIncome: typeof checkIsIncome;
   computedAccounts: TreasuryData['accounts'];
@@ -112,7 +114,8 @@ const setup = (overrides: { transactions?: Transaction[] } = {}) => {
         monthlyDay: 1,
       },
     },
-    sync,
+    createTransactions,
+    replaceTransactions,
     checkIsTransfer,
     checkIsIncome,
     computedAccounts: accounts,
@@ -143,7 +146,8 @@ const submit = () => {
 };
 
 beforeEach(() => {
-  sync.mockClear();
+  createTransactions.mockClear();
+  replaceTransactions.mockClear();
   requestReconcile.mockClear();
   onCommitSuccess.mockClear();
   checkIsIncome.mockClear();
@@ -168,15 +172,16 @@ const baseProps = {
 };
 
 describe('SidebarNewTransactionSection', () => {
-  test('given a non-recurring expense with sufficient projected balance, when submitted, then sync is called with one new tx appended', () => {
+  test('given a non-recurring expense with sufficient projected balance, when submitted, then createTransactions is called with the new batch (no full-DB replace)', () => {
     render(<SidebarNewTransactionSection {...baseProps} onCommitSuccess={onCommitSuccess} />);
     fillCommonFields();
     submit();
     expect(requestReconcile).not.toHaveBeenCalled();
-    expect(sync).toHaveBeenCalledTimes(1);
-    const synced = sync.mock.calls[0][0] as TreasuryData;
-    expect(synced.transactions).toHaveLength(1);
-    expect(synced.transactions[0]).toMatchObject({
+    expect(createTransactions).toHaveBeenCalledTimes(1);
+    expect(replaceTransactions).not.toHaveBeenCalled();
+    const batch = createTransactions.mock.calls[0][0] as Transaction[];
+    expect(batch).toHaveLength(1);
+    expect(batch[0]).toMatchObject({
       name: 'Rent',
       amount: 5000,
       typeId: 't4',
@@ -186,44 +191,42 @@ describe('SidebarNewTransactionSection', () => {
     });
   });
 
-  test('given an expense exceeding projected balance, when submitted, then requestReconcile is called and sync is deferred until reconciliation succeeds', () => {
+  test('given an expense exceeding projected balance, when submitted, then requestReconcile is called and append is deferred; on success replaceTransactions is called', () => {
     render(<SidebarNewTransactionSection {...baseProps} onCommitSuccess={onCommitSuccess} />);
     fillCommonFields();
     fireEvent.change(screen.getByPlaceholderText('0.00'), { target: { value: '200000' } });
     submit();
     expect(requestReconcile).toHaveBeenCalledTimes(1);
-    expect(sync).not.toHaveBeenCalled();
+    expect(createTransactions).not.toHaveBeenCalled();
+    expect(replaceTransactions).not.toHaveBeenCalled();
 
-    // simulate reconciliation success
     const onSuccess = requestReconcile.mock.calls[0][2];
-    const reconciledTxs = [
-      { id: 'pre-existing', name: 'adjusted' } as unknown as Transaction,
-    ];
+    const reconciledTxs = [{ id: 'pre-existing', name: 'adjusted' } as unknown as Transaction];
     onSuccess({}, reconciledTxs);
-    expect(sync).toHaveBeenCalledTimes(1);
-    const synced = sync.mock.calls[0][0] as TreasuryData;
-    expect(synced.transactions[0]).toEqual({ id: 'pre-existing', name: 'adjusted' });
-    expect(synced.transactions[1]).toMatchObject({ name: 'Rent', amount: 200000 });
+    expect(replaceTransactions).toHaveBeenCalledTimes(1);
+    const replaced = replaceTransactions.mock.calls[0][0] as Transaction[];
+    expect(replaced[0]).toEqual({ id: 'pre-existing', name: 'adjusted' });
+    expect(replaced[1]).toMatchObject({ name: 'Rent', amount: 200000 });
   });
 
-  test('given an income tx that would push projected negative, when submitted, then sync proceeds without reconciliation (income skips guard)', () => {
+  test('given an income tx that would push projected negative, when submitted, then createTransactions proceeds without reconciliation (income skips guard)', () => {
     checkIsIncome.mockReturnValue(true);
     render(<SidebarNewTransactionSection {...baseProps} onCommitSuccess={onCommitSuccess} />);
     fillCommonFields();
     fireEvent.change(screen.getByPlaceholderText('0.00'), { target: { value: '200000' } });
     submit();
     expect(requestReconcile).not.toHaveBeenCalled();
-    expect(sync).toHaveBeenCalledTimes(1);
+    expect(createTransactions).toHaveBeenCalledTimes(1);
   });
 
-  test('given a fee amount > 0, when submitted, then sync includes a paired Fee transaction with the Expense type', () => {
+  test('given a fee amount > 0, when submitted, then the batch passed to createTransactions includes a paired Fee transaction with the Expense type', () => {
     render(<SidebarNewTransactionSection {...baseProps} onCommitSuccess={onCommitSuccess} />);
     fillCommonFields();
     fireEvent.change(screen.getByPlaceholderText('Fee'), { target: { value: '50' } });
     submit();
-    const synced = sync.mock.calls[0][0] as TreasuryData;
-    expect(synced.transactions).toHaveLength(2);
-    expect(synced.transactions[1]).toMatchObject({
+    const batch = createTransactions.mock.calls[0][0] as Transaction[];
+    expect(batch).toHaveLength(2);
+    expect(batch[1]).toMatchObject({
       name: 'Fee: Rent',
       amount: 50,
       typeId: 't2',
@@ -238,30 +241,5 @@ describe('SidebarNewTransactionSection', () => {
     const id = onCommitSuccess.mock.calls[0][0];
     expect(typeof id).toBe('string');
     expect(id.startsWith('uuid-')).toBe(true);
-  });
-
-  test('given pre-existing transactions in data, when submitted, then sync preserves them and appends the new tx after', () => {
-    const existing: Transaction = {
-      id: 'old',
-      name: 'Old Tx',
-      amount: 1,
-      typeId: 't4',
-      accountId: 'a1',
-      date: '2025-12-01',
-      cycleKey: '2025-12-01-A',
-      isPlanned: true,
-      isPaid: false,
-      isRecurring: false,
-      history: [],
-      created_at: '2025-12-01T00:00:00Z',
-      updated_at: '2025-12-01T00:00:00Z',
-    };
-    setup({ transactions: [existing] });
-    render(<SidebarNewTransactionSection {...baseProps} onCommitSuccess={onCommitSuccess} />);
-    fillCommonFields();
-    submit();
-    const synced = sync.mock.calls[0][0] as TreasuryData;
-    expect(synced.transactions[0]).toEqual(existing);
-    expect(synced.transactions[1].name).toBe('Rent');
   });
 });

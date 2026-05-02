@@ -128,12 +128,12 @@ const AuditPanel: React.FC<AuditPanelProps> = ({
 
   return (
     <div
-      className={`fixed inset-y-0 right-0 z-[100] w-full max-w-md border-l border-black/5 bg-[#F5F5F7] shadow-2xl transition-transform duration-500 ease-in-out dark:border-white/10 dark:bg-[#0A0A0B] ${
+      className={`fixed inset-y-0 right-0 z-[100] w-full max-w-md border-l border-black/5 bg-[#F5F5F7] shadow-2xl transition-transform duration-500 ease-in-out dark:border-white/10 dark:bg-[#1E1E1F] ${
         isOpening && !isClosing ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
       {/* HEADER */}
-      <div className="flex items-center justify-between border-b border-black/5 bg-white px-6 py-5 dark:border-white/5 dark:bg-[#1C1C1E]">
+      <div className="flex items-center justify-between border-b border-black/5 bg-white px-6 py-5 dark:border-white/5 dark:bg-[#2C2C2E]">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white shadow-md dark:bg-white dark:text-black">
             <BarChart4 size={18} />
@@ -192,7 +192,7 @@ const AuditPanel: React.FC<AuditPanelProps> = ({
             </h3>
           </div>
 
-          <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-[#1C1C1E]">
+          <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-[#2C2C2E]">
             <p className="text-[11px] font-bold text-slate-400">Expense Growth</p>
             <div className="mt-2 flex items-baseline gap-3">
               <span
@@ -240,7 +240,7 @@ const AuditPanel: React.FC<AuditPanelProps> = ({
               report.periods.map((period, idx) => (
                 <div
                   key={idx}
-                  className="flex flex-col gap-3 rounded-xl border border-black/5 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-[#1C1C1E]"
+                  className="flex flex-col gap-3 rounded-xl border border-black/5 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-[#2C2C2E]"
                 >
                   <div className="flex items-center justify-between border-b border-black/5 pb-2 dark:border-white/5">
                     <span className="text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-white">
@@ -292,7 +292,7 @@ const KpiCard = ({
 }) => {
   const isEmerald = color === 'emerald';
   return (
-    <div className="rounded-2xl border border-black/5 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-[#1C1C1E]">
+    <div className="rounded-2xl border border-black/5 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-[#2C2C2E]">
       <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-50 dark:bg-white/5">
         {isEmerald ? (
           <Briefcase size={12} className="text-emerald-500" />

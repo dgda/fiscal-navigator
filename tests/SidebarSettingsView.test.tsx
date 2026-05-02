@@ -5,9 +5,9 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import SidebarSettingsView from '../src/components/layout/Sidebar/SidebarSettingsView/SidebarSettingsView';
 import type { TreasuryData } from '../src/types';
 
-const sync = vi.fn();
+const updateBaseSalary = vi.fn();
 const setActiveView = vi.fn();
-let mockTreasury: { data: TreasuryData; sync: typeof sync };
+let mockTreasury: { data: TreasuryData; updateBaseSalary: typeof updateBaseSalary };
 
 vi.mock('../src/context/TreasuryContext', () => ({
   useTreasury: () => mockTreasury,
@@ -29,9 +29,9 @@ const seed = (baseSalary: number): TreasuryData => ({
 });
 
 beforeEach(() => {
-  sync.mockClear();
+  updateBaseSalary.mockClear();
   setActiveView.mockClear();
-  mockTreasury = { data: seed(70000), sync };
+  mockTreasury = { data: seed(70000), updateBaseSalary };
 });
 
 afterEach(() => {
@@ -40,7 +40,7 @@ afterEach(() => {
 });
 
 describe('SidebarSettingsView', () => {
-  test('given the salary input is blurred with a new value, then sync is called with that value as a number on data.baseSalary', () => {
+  test('given the salary input is blurred with a new value, then updateBaseSalary is called with that value as a number', () => {
     render(
       <SidebarSettingsView
         setActiveView={setActiveView}
@@ -51,25 +51,10 @@ describe('SidebarSettingsView', () => {
     const input = screen.getByRole('spinbutton');
     fireEvent.change(input, { target: { value: '90000' } });
     fireEvent.blur(input, { target: { value: '90000' } });
-    expect(sync).toHaveBeenCalledWith(expect.objectContaining({ baseSalary: 90000 }));
+    expect(updateBaseSalary).toHaveBeenCalledWith(90000);
   });
 
-  test('given the salary input is blurred, then the rest of TreasuryData is preserved on the synced object', () => {
-    render(
-      <SidebarSettingsView
-        setActiveView={setActiveView}
-        inputGroupClass=""
-        inputBaseClass=""
-      />,
-    );
-    const input = screen.getByRole('spinbutton');
-    fireEvent.blur(input, { target: { value: '50000' } });
-    const arg = sync.mock.calls[0][0];
-    expect(arg.preferences).toEqual({ theme: 'light', useSystemDefault: true });
-    expect(arg.payoutConfig.archetype).toBe('bi-weekly');
-  });
-
-  test('given an empty string is blurred, then sync is called with baseSalary=0 (Number("") === 0)', () => {
+  test('given an empty string is blurred, then updateBaseSalary is called with 0 (Number("") === 0)', () => {
     render(
       <SidebarSettingsView
         setActiveView={setActiveView}
@@ -79,7 +64,7 @@ describe('SidebarSettingsView', () => {
     );
     const input = screen.getByRole('spinbutton');
     fireEvent.blur(input, { target: { value: '' } });
-    expect(sync).toHaveBeenCalledWith(expect.objectContaining({ baseSalary: 0 }));
+    expect(updateBaseSalary).toHaveBeenCalledWith(0);
   });
 
   test('given the "Return to Roadmap" button is clicked, then setActiveView is called with "roadmap"', () => {

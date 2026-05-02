@@ -22,10 +22,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = (props) => {
   const sidebarBase =
-    'no-scrollbar flex h-full flex-col overflow-y-auto border-r border-black/5 bg-[#FBFBFD]/80 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] dark:border-white/5 dark:bg-[#141416]/90';
+    'no-scrollbar flex h-full flex-col overflow-y-auto border-r border-black/5 bg-[#FBFBFD]/80 backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] dark:border-white/5 dark:bg-[#28282A]/90';
 
   const inputGroupClass =
-    'group relative flex items-center rounded-[10px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5 transition-all focus-within:ring-2 focus-within:ring-blue-500/20 dark:bg-[#1C1C1E] dark:ring-white/10 dark:focus-within:ring-blue-500/30';
+    'group relative flex items-center rounded-[10px] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5 transition-all focus-within:ring-2 focus-within:ring-blue-500/20 dark:bg-[#2C2C2E] dark:ring-white/10 dark:focus-within:ring-blue-500/30';
 
   const inputBaseClass =
     'w-full bg-transparent px-3 py-2.5 text-[11px] font-semibold text-slate-900 placeholder:text-slate-400 outline-none transition-colors dark:text-[#E1E1E1] dark:placeholder:text-slate-600';
