@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+*.log
+.DS_Store
+data
+db.json
+db copy.json
+tests
+vitest.config.ts
+.vscode
+.idea
