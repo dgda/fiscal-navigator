@@ -15,6 +15,14 @@ COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/dist-server ./dist-server
+COPY --from=build /app/LICENSE.md ./LICENSE.md
+
+LABEL org.opencontainers.image.title="Treasury OS" \
+      org.opencontainers.image.description="Personal financial roadmap and liquidity-forecasting engine." \
+      org.opencontainers.image.vendor="Don Gabriel Deoferio Ablay" \
+      org.opencontainers.image.source="https://github.com/dgda/fiscal-navigator" \
+      org.opencontainers.image.url="https://hub.docker.com/r/dgabrielablay/fiscal-navigator" \
+      org.opencontainers.image.licenses="LicenseRef-Treasury-OS-Proprietary"
 
 EXPOSE 3001
 CMD ["node", "dist-server/server.js"]
