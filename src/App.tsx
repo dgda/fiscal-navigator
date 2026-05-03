@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TreasuryProvider, useTreasury } from './context/TreasuryContext';
 import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
 import Sidebar from './components/layout/Sidebar/Sidebar';
 import RoadmapSpreadsheet from './components/roadmap/RoadmapSpreadsheet';
 import TransactionEditModal from './components/roadmap/TransactionEditModal';
@@ -81,6 +82,8 @@ const AppContent: React.FC = () => {
           )}
         </main>
       </div>
+
+      <Footer />
 
       {editingId && (
         <TransactionEditModal transactionId={editingId} onClose={() => setEditingId(null)} />
