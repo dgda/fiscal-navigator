@@ -29,4 +29,4 @@ const MonthHeader: React.FC<MonthHeaderProps> = (props) => {
   );
 };
 
-export default MonthHeader;
+export default React.memo(MonthHeader);

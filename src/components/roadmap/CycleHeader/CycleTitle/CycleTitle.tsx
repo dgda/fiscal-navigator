@@ -36,4 +36,4 @@ const CycleTitle: React.FC<CycleTitleProps> = (props) => {
   );
 };
 
-export default CycleTitle;
+export default React.memo(CycleTitle);

@@ -170,4 +170,4 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
   );
 };
 
-export default LiquidityGapIndicator;
+export default React.memo(LiquidityGapIndicator);

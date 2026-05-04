@@ -65,4 +65,4 @@ const CycleContent: React.FC<CycleContentProps> = (props) => {
   );
 };
 
-export default CycleContent;
+export default React.memo(CycleContent);

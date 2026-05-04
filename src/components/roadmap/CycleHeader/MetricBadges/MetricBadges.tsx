@@ -83,4 +83,4 @@ const MetricBadges: React.FC<MetricBadgesProps> = (props) => {
   );
 };
 
-export default MetricBadges;
+export default React.memo(MetricBadges);

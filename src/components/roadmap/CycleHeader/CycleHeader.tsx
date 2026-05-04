@@ -60,4 +60,4 @@ const CycleHeader: React.FC<CycleHeaderProps> = (props) => {
   );
 };
 
-export default CycleHeader;
+export default React.memo(CycleHeader);

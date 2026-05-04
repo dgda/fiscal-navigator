@@ -46,4 +46,4 @@ const CycleMetricPill: React.FC<CycleMetricPillsProps> = (props) => {
   );
 };
 
-export default CycleMetricPill;
+export default React.memo(CycleMetricPill);

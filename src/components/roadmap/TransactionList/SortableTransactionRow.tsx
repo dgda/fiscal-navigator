@@ -1,3 +1,4 @@
+import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, CheckCircle2, Circle, Repeat, Trash2 } from 'lucide-react';
@@ -165,4 +166,10 @@ const SortableTransactionRow = (props: SortableTransactionRowProps) => {
   );
 };
 
-export default SortableTransactionRow;
+/**
+ * Memoized: TransactionList rebuilds its rows on every parent render. Since the row's props
+ * are stable references (callbacks come from context useCallbacks; tx reference only changes
+ * when the underlying transaction object itself changes), shallow-equality comparison is enough
+ * to skip re-rendering rows whose data didn't move.
+ */
+export default React.memo(SortableTransactionRow);

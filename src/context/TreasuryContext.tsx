@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useMemo,
+} from 'react';
 import getSymbolFromCurrency from 'currency-symbol-map';
 import {
   TreasuryData,
@@ -279,8 +287,9 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 
   // --- CORE CALCULATION LOGIC ---
-  const computedAccounts =
-    data?.accounts.map((acc) => {
+  const computedAccounts = useMemo<Account[]>(() => {
+    if (!data) return [];
+    return data.accounts.map((acc) => {
       const balance =
         acc.startingBalance +
         (data.transactions || [])
@@ -297,130 +306,213 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             return sum;
           }, 0);
       return { ...acc, balance };
-    }) || [];
+    });
+  }, [data, checkIsIncome]);
 
-  const totalLiquidity = computedAccounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
+  const totalLiquidity = useMemo(
+    () => computedAccounts.reduce((sum, acc) => sum + (acc.balance || 0), 0),
+    [computedAccounts],
+  );
 
   const currencyCode = data?.preferences?.currency || DEFAULT_CURRENCY_CODE;
-  const currencySymbol = getSymbolFromCurrency(currencyCode) || DEFAULT_CURRENCY_SYMBOL;
+  const currencySymbol = useMemo(
+    () => getSymbolFromCurrency(currencyCode) || DEFAULT_CURRENCY_SYMBOL,
+    [currencyCode],
+  );
 
-  const renderTypeOptions = (parentId: string | null = null, depth = 0) => {
-    if (!data) return null;
-    return data.types
-      .filter((t) => t.parent_type === parentId)
-      .map((t) => (
-        <React.Fragment key={t.id}>
-          <option value={t.id}>
-            {'\u00A0'.repeat(depth * 3)} {t.name}
-          </option>
-          {renderTypeOptions(t.id, depth + 1)}
-        </React.Fragment>
-      ));
-  };
+  const renderTypeOptions = useCallback(
+    (parentId: string | null = null, depth = 0): React.ReactNode => {
+      if (!data) return null;
+      return data.types
+        .filter((t) => t.parent_type === parentId)
+        .map((t) => (
+          <React.Fragment key={t.id}>
+            <option value={t.id}>
+              {'\u00A0'.repeat(depth * 3)} {t.name}
+            </option>
+            {renderTypeOptions(t.id, depth + 1)}
+          </React.Fragment>
+        ));
+    },
+    [data],
+  );
 
   // --- Transaction Mutations ---
-  const commitUpdate = (id: string, updates: Partial<Transaction>, msg: string) => {
-    if (!data) return;
-    const now = new Date().toISOString();
-    const nextTxs = data.transactions.map((t) => {
-      if (t.id !== id) return t;
-      const snapshot = { ...t };
-      // @ts-expect-error clearing values
-      delete snapshot.history;
+  const commitUpdate = useCallback(
+    (id: string, updates: Partial<Transaction>, msg: string) => {
+      if (!data) return;
+      const now = new Date().toISOString();
+      const nextTxs = data.transactions.map((t) => {
+        if (t.id !== id) return t;
+        const snapshot = { ...t };
+        // @ts-expect-error clearing values
+        delete snapshot.history;
+        return {
+          ...t,
+          ...updates,
+          updated_at: now,
+          history: [...t.history, { snapshot, timestamp: now, label: msg }],
+        };
+      });
+      setData({ ...data, transactions: nextTxs });
+      void apiCall(`/api/transactions/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ updates, msg }),
+      });
+    },
+    [data, apiCall],
+  );
 
-      return {
-        ...t,
-        ...updates,
-        updated_at: now,
-        history: [...t.history, { snapshot, timestamp: now, label: msg }],
-      };
-    });
-    setData({ ...data, transactions: nextTxs });
-    void apiCall(`/api/transactions/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ updates, msg }),
-    });
-  };
+  const toggleExecution = useCallback(
+    (id: string) => {
+      if (!data) return;
+      const now = new Date().toISOString();
+      const nextTxs = data.transactions.map((t) => {
+        if (t.id !== id) return t;
+        const nextStatus = !t.isPaid;
+        const snapshot = { ...t };
+        // @ts-expect-error clearing values
+        delete snapshot.history;
+        return {
+          ...t,
+          isPaid: nextStatus,
+          updated_at: now,
+          history: [
+            ...t.history,
+            { snapshot, timestamp: now, label: nextStatus ? 'Marked Paid' : 'Marked Planned' },
+          ],
+        };
+      });
+      setData({ ...data, transactions: nextTxs });
+      void apiCall(`/api/transactions/${id}/toggle-paid`, { method: 'POST' });
+    },
+    [data, apiCall],
+  );
 
-  const toggleExecution = (id: string) => {
-    if (!data) return;
-    const now = new Date().toISOString();
-    const nextTxs = data.transactions.map((t) => {
-      if (t.id !== id) return t;
-      const nextStatus = !t.isPaid;
-      const snapshot = { ...t };
-      // @ts-expect-error clearing values
-      delete snapshot.history;
+  const updateSeries = useCallback(
+    (groupId: string, baseUpdates: Partial<Transaction>, msg: string) => {
+      if (!data) return;
+      const now = new Date().toISOString();
+      const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        id: _id,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        date: _date,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        cycleKey: _cycleKey,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        created_at: _ca,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        history: _h,
+        ...safeUpdates
+      } = baseUpdates;
+      const nextTxs = data.transactions.map((t) => {
+        if (t.recurringGroupId !== groupId || t.isPaid) return t;
+        const snapshot = { ...t };
+        // @ts-expect-error clearing values
+        delete snapshot.history;
+        return {
+          ...t,
+          ...safeUpdates,
+          updated_at: now,
+          history: [...t.history, { snapshot, timestamp: now, label: msg }],
+        };
+      });
+      setData({ ...data, transactions: nextTxs });
+      void apiCall(`/api/transactions/series/${groupId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ updates: safeUpdates, msg }),
+      });
+    },
+    [data, apiCall],
+  );
 
-      return {
-        ...t,
-        isPaid: nextStatus,
-        updated_at: now,
-        history: [
-          ...t.history,
-          { snapshot, timestamp: now, label: nextStatus ? 'Marked Paid' : 'Marked Planned' },
-        ],
-      };
-    });
-    setData({ ...data, transactions: nextTxs });
-    void apiCall(`/api/transactions/${id}/toggle-paid`, { method: 'POST' });
-  };
+  const deleteSeries = useCallback(
+    (groupId: string) => {
+      if (!data) return;
+      const nextTxs = data.transactions.filter((t) => t.recurringGroupId !== groupId);
+      setData({ ...data, transactions: nextTxs });
+      void apiCall(`/api/transactions/series/${groupId}`, { method: 'DELETE' });
+    },
+    [data, apiCall],
+  );
 
-  const updateSeries = (groupId: string, baseUpdates: Partial<Transaction>, msg: string) => {
-    if (!data) return;
-    const now = new Date().toISOString();
+  const breakSeriesLink = useCallback(
+    (id: string) => {
+      if (!data) return;
+      const nextTxs = data.transactions.map((t) =>
+        t.id === id ? { ...t, recurringGroupId: undefined } : t,
+      );
+      setData({ ...data, transactions: nextTxs });
+      void apiCall(`/api/transactions/${id}/break-series`, { method: 'POST' });
+    },
+    [data, apiCall],
+  );
 
-    const {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      id: _id,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      date: _date,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      cycleKey: _cycleKey,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      created_at: _ca,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      history: _h,
-      ...safeUpdates
-    } = baseUpdates;
-
-    const nextTxs = data.transactions.map((t) => {
-      if (t.recurringGroupId !== groupId || t.isPaid) return t;
-
-      const snapshot = { ...t };
-      // @ts-expect-error clearing values
-      delete snapshot.history;
-
-      return {
-        ...t,
-        ...safeUpdates,
-        updated_at: now,
-        history: [...t.history, { snapshot, timestamp: now, label: msg }],
-      };
-    });
-
-    setData({ ...data, transactions: nextTxs });
-    void apiCall(`/api/transactions/series/${groupId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ updates: safeUpdates, msg }),
-    });
-  };
-
-  const deleteSeries = (groupId: string) => {
-    if (!data) return;
-    const nextTxs = data.transactions.filter((t) => t.recurringGroupId !== groupId);
-    setData({ ...data, transactions: nextTxs });
-    void apiCall(`/api/transactions/series/${groupId}`, { method: 'DELETE' });
-  };
-
-  const breakSeriesLink = (id: string) => {
-    if (!data) return;
-    const nextTxs = data.transactions.map((t) =>
-      t.id === id ? { ...t, recurringGroupId: undefined } : t,
-    );
-    setData({ ...data, transactions: nextTxs });
-    void apiCall(`/api/transactions/${id}/break-series`, { method: 'POST' });
-  };
+  const contextValue = useMemo<TreasuryContextType | null>(() => {
+    if (!data) return null;
+    return {
+      data,
+      loading,
+      sync,
+      updatePreferences,
+      updatePayoutConfig,
+      updateBaseSalary,
+      updateAccounts,
+      updateTypes,
+      computedAccounts,
+      totalLiquidity,
+      currencySymbol,
+      currencyCode,
+      renderTypeOptions,
+      checkIsIncome,
+      checkIsTransfer,
+      getFullTypeName,
+      commitUpdate,
+      updateSeries,
+      deleteSeries,
+      breakSeriesLink,
+      toggleExecution,
+      createTransactions,
+      replaceTransactions,
+      deleteTransaction,
+      notification,
+      dismissNotification,
+      reconcileRequest,
+      requestReconcile,
+      clearReconcileRequest,
+    };
+  }, [
+    data,
+    loading,
+    sync,
+    updatePreferences,
+    updatePayoutConfig,
+    updateBaseSalary,
+    updateAccounts,
+    updateTypes,
+    computedAccounts,
+    totalLiquidity,
+    currencySymbol,
+    currencyCode,
+    renderTypeOptions,
+    checkIsIncome,
+    checkIsTransfer,
+    getFullTypeName,
+    commitUpdate,
+    updateSeries,
+    deleteSeries,
+    breakSeriesLink,
+    toggleExecution,
+    createTransactions,
+    replaceTransactions,
+    deleteTransaction,
+    notification,
+    dismissNotification,
+    reconcileRequest,
+    requestReconcile,
+    clearReconcileRequest,
+  ]);
 
   if (loading || !data) {
     return (
@@ -432,43 +524,7 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
   }
 
-  return (
-    <TreasuryContext.Provider
-      value={{
-        data,
-        loading,
-        sync,
-        updatePreferences,
-        updatePayoutConfig,
-        updateBaseSalary,
-        updateAccounts,
-        updateTypes,
-        computedAccounts,
-        totalLiquidity,
-        currencySymbol,
-        currencyCode,
-        renderTypeOptions,
-        checkIsIncome,
-        checkIsTransfer,
-        getFullTypeName,
-        commitUpdate,
-        updateSeries,
-        deleteSeries,
-        breakSeriesLink,
-        toggleExecution,
-        createTransactions,
-        replaceTransactions,
-        deleteTransaction,
-        notification,
-        dismissNotification,
-        reconcileRequest,
-        requestReconcile,
-        clearReconcileRequest,
-      }}
-    >
-      {children}
-    </TreasuryContext.Provider>
-  );
+  return <TreasuryContext.Provider value={contextValue}>{children}</TreasuryContext.Provider>;
 };
 
 // eslint-disable-next-line react-refresh/only-export-components

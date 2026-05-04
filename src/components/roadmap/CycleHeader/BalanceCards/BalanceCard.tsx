@@ -92,4 +92,4 @@ const BalanceCard: React.FC<BalanceCardProps> = (props) => {
   );
 };
 
-export default BalanceCard;
+export default React.memo(BalanceCard);
