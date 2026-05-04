@@ -27,7 +27,7 @@ const CycleContent: React.FC<CycleContentProps> = (props) => {
 
         const columnClasses = [
           // Layout & Base
-          'relative flex h-full w-[432px] flex-col overflow-visible',
+          'relative flex h-full w-screen max-w-[100vw] flex-col overflow-visible md:w-[432px] md:max-w-none',
           'bg-[#F5F5F7] border-r hover:z-50',
           'dark:border-white/5 dark:bg-[#1E1E1F]',
 

@@ -36,12 +36,27 @@ const Sidebar: React.FC<SidebarProps> = (props) => {
     </div>
   );
 
+  // On mobile (< md), the sidebar overlays the main content with a tap-to-close backdrop.
+  // On md+, it remains an inline push panel as before.
+  const overlayBase =
+    'absolute inset-y-0 left-0 z-[510] md:static md:z-auto';
+  const widthOpen = 'w-[280px] sm:w-[320px] px-5 py-6 opacity-100';
+  const widthClosed = 'w-0 overflow-hidden p-0 opacity-0';
+
   return (
     <div className="relative z-[500] flex h-full shrink-0">
+      {/* Mobile-only backdrop. Click to dismiss. Hidden on md+. */}
+      {props.isOpen && (
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 z-[505] bg-black/30 backdrop-blur-[2px] md:hidden"
+          onClick={props.onToggle}
+        />
+      )}
+
       <aside
-        className={`${sidebarBase} ${
-          props.isOpen ? 'w-[320px] px-5 py-6 opacity-100' : 'w-0 overflow-hidden p-0 opacity-0'
-        }`}
+        className={`${overlayBase} ${sidebarBase} ${props.isOpen ? widthOpen : widthClosed}`}
       >
         {props.activeView === 'roadmap' ? (
           <>

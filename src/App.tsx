@@ -20,7 +20,12 @@ const AppContent: React.FC = () => {
     month: new Date().getMonth(),
   });
   const [activeView, setActiveView] = useState<'roadmap' | 'settings'>('roadmap');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Default open on viewports >=768px (Tailwind md), collapsed on phones so the user lands
+  // on the roadmap rather than a 320px sidebar covering most of a phone screen.
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.matchMedia('(min-width: 768px)').matches;
+  });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
 

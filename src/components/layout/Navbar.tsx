@@ -30,14 +30,14 @@ const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
   });
 
   return (
-    <nav className="relative z-30 flex h-14 w-full shrink-0 items-center justify-between border-b border-black/5 bg-[#FBFBFD]/80 px-4 backdrop-blur-2xl transition-colors dark:border-white/5 dark:bg-[#28282A]/80">
-      <div className="flex items-center gap-6">
-        {/* BRAND IDENTITY */}
-        <div className="flex items-center gap-3 pr-4">
+    <nav className="relative z-30 flex h-14 w-full shrink-0 items-center justify-between gap-3 border-b border-black/5 bg-[#FBFBFD]/80 px-3 backdrop-blur-2xl transition-colors dark:border-white/5 dark:bg-[#28282A]/80 sm:px-4">
+      <div className="flex min-w-0 items-center gap-3 sm:gap-6">
+        {/* BRAND IDENTITY — full text on sm+, icon-only on phones */}
+        <div className="flex shrink-0 items-center gap-3 pr-0 sm:pr-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30">
             <Landmark size={16} strokeWidth={2.5} />
           </div>
-          <div className="flex flex-col">
+          <div className="hidden flex-col sm:flex">
             <span className="text-[13px] font-bold tracking-tight text-slate-900 dark:text-white">
               Fiscal Navigator
             </span>
@@ -47,10 +47,10 @@ const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
           </div>
         </div>
 
-        <div className="h-6 w-[1px] bg-black/5 dark:bg-white/5" />
+        <div className="hidden h-6 w-[1px] bg-black/5 dark:bg-white/5 lg:block" />
 
-        {/* ACCOUNT STATUS PILLS */}
-        <div className="no-scrollbar flex items-center gap-2 overflow-x-auto">
+        {/* ACCOUNT STATUS PILLS — hidden below lg, optional on tablets, scrollable on desktop */}
+        <div className="no-scrollbar hidden items-center gap-2 overflow-x-auto lg:flex">
           {computedAccounts.map((acc) => (
             <div
               key={acc.id}
@@ -77,10 +77,10 @@ const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        {/* RULE FOUR: AGE OF MONEY (RUNWAY STATUS) */}
+      <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+        {/* RUNWAY — hidden on phones, visible on sm+ */}
         <div
-          className={`group relative flex items-center gap-3 overflow-hidden rounded-[10px] border px-3 py-1.5 transition-all duration-500 ${
+          className={`group relative hidden items-center gap-3 overflow-hidden rounded-[10px] border px-3 py-1.5 transition-all duration-500 sm:flex ${
             bufferDays > 30
               ? 'border-emerald-500/10 bg-emerald-500/[0.03] dark:border-emerald-500/10'
               : 'border-amber-500/10 bg-amber-500/[0.03] dark:border-amber-500/10'
@@ -116,10 +116,10 @@ const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
         </div>
 
-        <div className="h-6 w-[1px] bg-black/5 dark:bg-white/5" />
+        <div className="hidden h-6 w-[1px] bg-black/5 dark:bg-white/5 sm:block" />
 
-        {/* TOTAL LIQUIDITY DISPLAY (Glass Card) */}
-        <div className="flex items-center gap-3 rounded-[10px] border border-black/5 bg-white/50 px-3 py-1.5 backdrop-blur-md dark:border-white/5 dark:bg-white/5">
+        {/* TOTAL LIQUIDITY — hidden on phones, visible on sm+ */}
+        <div className="hidden items-center gap-3 rounded-[10px] border border-black/5 bg-white/50 px-3 py-1.5 backdrop-blur-md dark:border-white/5 dark:bg-white/5 sm:flex">
           <div className="flex flex-col items-end leading-tight">
             <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
               Net Liquidity
@@ -134,10 +134,10 @@ const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
           </div>
         </div>
 
-        <div className="h-6 w-[1px] bg-black/5 dark:bg-white/5" />
+        <div className="hidden h-6 w-[1px] bg-black/5 dark:bg-white/5 sm:block" />
 
-        {/* CONTROL CLUSTER (Segmented) */}
-        <div className="flex items-center gap-3">
+        {/* CONTROL CLUSTER (Segmented) — always visible */}
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Theme & View Toggles remain identical ... */}
           {/* ... */}
           <div className="flex items-center rounded-full border border-black/5 bg-white p-0.5 shadow-sm dark:border-white/5 dark:bg-[#2C2C2E]">

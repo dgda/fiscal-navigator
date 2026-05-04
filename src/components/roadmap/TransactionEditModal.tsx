@@ -136,7 +136,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
       onClick={handleClose}
     >
       <div
-        className={`flex w-[460px] flex-col overflow-hidden rounded-[20px] bg-[#FBFBFD] shadow-2xl ring-1 ring-black/5 transition-all duration-300 dark:bg-[#1E1E1F] dark:ring-white/10 ${isClosing ? 'scale-[0.98] opacity-0' : 'scale-100 opacity-100'}`}
+        className={`flex w-full max-w-[460px] flex-col overflow-hidden rounded-[20px] bg-[#FBFBFD] shadow-2xl ring-1 ring-black/5 transition-all duration-300 dark:bg-[#1E1E1F] dark:ring-white/10 ${isClosing ? 'scale-[0.98] opacity-0' : 'scale-100 opacity-100'}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* HEADER */}
