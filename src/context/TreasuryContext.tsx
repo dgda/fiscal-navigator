@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import getSymbolFromCurrency from 'currency-symbol-map';
 import {
   TreasuryData,
@@ -38,6 +38,9 @@ interface TreasuryContextType {
   createTransactions: (transactions: Transaction[]) => Promise<void>;
   replaceTransactions: (transactions: Transaction[]) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
+  /** Toast notifications surfaced to the user (e.g. concurrency conflicts, write failures). */
+  notification: { kind: 'conflict' | 'error'; message: string } | null;
+  dismissNotification: () => void;
   // Reconciliation Global State
   reconcileRequest: {
     shortfall: number;
@@ -80,33 +83,73 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setReconcileRequest(null);
   }, []);
 
-  // Initial Fetch
-  useEffect(() => {
-    fetch(`${API_URL}/api/data`)
-      .then((res) => res.json())
-      .then((d) => {
-        setData(d);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to load treasury data', err);
-        setLoading(false);
-      });
+  // Tracks the doc version the client thinks the server holds. Sent as If-Match on every
+  // mutation; updated from X-Resource-Version on every successful response. Lives in a ref
+  // so successive mutations within the same render see the latest value.
+  const versionRef = useRef<number>(0);
+
+  const [notification, setNotification] = useState<TreasuryContextType['notification']>(null);
+  const dismissNotification = useCallback(() => setNotification(null), []);
+
+  const refetch = useCallback(async () => {
+    const res = await fetch(`${API_URL}/api/data`);
+    const ver = Number(res.headers.get('X-Resource-Version') ?? '0');
+    const fresh = (await res.json()) as TreasuryData;
+    versionRef.current = Number.isFinite(ver) ? ver : (fresh.version ?? 0);
+    setData(fresh);
+    return fresh;
   }, []);
 
-  // Generic JSON fetch helper. Optimistic update of local state has already happened by the caller.
+  // Initial Fetch
+  useEffect(() => {
+    refetch()
+      .catch((err) => console.error('Failed to load treasury data', err))
+      .finally(() => setLoading(false));
+  }, [refetch]);
+
+  /**
+   * Generic JSON fetch helper. Sends If-Match for optimistic concurrency, updates versionRef
+   * on success, and on 409 refetches and surfaces a conflict toast.
+   */
   const apiCall = useCallback(
     async (path: string, init: RequestInit) => {
       try {
-        await fetch(`${API_URL}${path}`, {
+        const res = await fetch(`${API_URL}${path}`, {
           ...init,
-          headers: { 'Content-Type': 'application/json', ...(init.headers ?? {}) },
+          headers: {
+            'Content-Type': 'application/json',
+            'If-Match': String(versionRef.current),
+            ...(init.headers ?? {}),
+          },
         });
+        const ver = res.headers.get('X-Resource-Version');
+        if (res.status === 409) {
+          // Server-side conflict: our optimistic local state is stale. Refetch and surface.
+          await refetch();
+          setNotification({
+            kind: 'conflict',
+            message:
+              'Data was changed elsewhere — your view has been refreshed. Please retry your last action.',
+          });
+          return;
+        }
+        if (!res.ok) {
+          setNotification({
+            kind: 'error',
+            message: `Save failed (${res.status}). Your last change may not have been persisted.`,
+          });
+          return;
+        }
+        if (ver !== null) versionRef.current = Number(ver);
       } catch (err) {
         console.error(`Request failed: ${init.method ?? 'GET'} ${path}`, err);
+        setNotification({
+          kind: 'error',
+          message: 'Network error — your last change may not have been saved.',
+        });
       }
     },
-    [],
+    [refetch],
   );
 
   // Legacy escape hatch: replaces the entire DB document. Prefer focused methods.
@@ -416,6 +459,8 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         createTransactions,
         replaceTransactions,
         deleteTransaction,
+        notification,
+        dismissNotification,
         reconcileRequest,
         requestReconcile,
         clearReconcileRequest,

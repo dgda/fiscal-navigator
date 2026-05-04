@@ -113,6 +113,7 @@ const setup = (overrides: { transactions?: Transaction[] } = {}) => {
         semiMonthlyDays: [15, 30],
         monthlyDay: 1,
       },
+    version: 0,
     },
     createTransactions,
     replaceTransactions,

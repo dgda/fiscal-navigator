@@ -62,4 +62,9 @@ export interface TreasuryData {
   baseSalary: number;
   preferences: UserPreferences; // Added here
   payoutConfig: PayoutConfig;
+  /**
+   * Monotonically increasing version, bumped on every successful write.
+   * Used for optimistic-concurrency control via If-Match headers.
+   */
+  version: number;
 }

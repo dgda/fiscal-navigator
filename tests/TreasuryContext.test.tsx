@@ -28,6 +28,7 @@ const baseData: TreasuryData = {
     semiMonthlyDays: [15, 30],
     monthlyDay: 1,
   },
+version: 0,
 };
 
 const tx = (p: Partial<Transaction>): Transaction => ({
@@ -406,6 +407,159 @@ describe('TreasuryContext currency', () => {
       await result.current.updatePreferences({ currency: 'EUR' });
     });
     expect(result.current.currencySymbol).toBe('€');
+  });
+});
+
+describe('TreasuryContext optimistic concurrency', () => {
+  test('given the initial fetch returns X-Resource-Version, then mutations send that as If-Match', async () => {
+    // Custom mock that returns version=42 on GET
+    capturedRequests = [];
+    fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      if (method !== 'GET') {
+        const body = init?.body ? JSON.parse(init.body as string) : undefined;
+        capturedRequests.push({ url, method, body });
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { 'X-Resource-Version': '43' },
+        });
+      }
+      return new Response(JSON.stringify(baseData), {
+        status: 200,
+        headers: { 'X-Resource-Version': '42' },
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = renderHook(() => useTreasury(), { wrapper });
+    await waitFor(() => expect(result.result.current).not.toBeNull());
+
+    await act(async () => {
+      await result.result.current.updateBaseSalary(123);
+    });
+
+    const init = fetchMock.mock.calls.find(
+      (c) => (c[1] as RequestInit | undefined)?.method === 'PATCH',
+    )?.[1] as RequestInit;
+    const headers = init.headers as Record<string, string>;
+    expect(headers['If-Match']).toBe('42');
+  });
+
+  test('given a 409 conflict, then the client refetches and surfaces a conflict notification', async () => {
+    let getCount = 0;
+    fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      if (method === 'GET') {
+        getCount += 1;
+        return new Response(JSON.stringify({ ...baseData, baseSalary: getCount === 1 ? 70000 : 88888 }), {
+          status: 200,
+          headers: { 'X-Resource-Version': String(getCount) },
+        });
+      }
+      return new Response(JSON.stringify({ error: 'version mismatch', currentVersion: 7 }), {
+        status: 409,
+        headers: { 'X-Resource-Version': '7' },
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = renderHook(() => useTreasury(), { wrapper });
+    await waitFor(() => expect(result.result.current).not.toBeNull());
+
+    await act(async () => {
+      await result.result.current.updateBaseSalary(999);
+    });
+
+    expect(result.result.current.notification?.kind).toBe('conflict');
+    expect(getCount).toBe(2); // initial + refetch on 409
+    expect(result.result.current.data.baseSalary).toBe(88888); // refreshed value
+  });
+
+  test('given a successful response with X-Resource-Version, then subsequent mutations send the new version', async () => {
+    capturedRequests = [];
+    let serverVersion = 10;
+    fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      if (method !== 'GET') {
+        const body = init?.body ? JSON.parse(init.body as string) : undefined;
+        capturedRequests.push({ url, method, body });
+        serverVersion += 1;
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { 'X-Resource-Version': String(serverVersion) },
+        });
+      }
+      return new Response(JSON.stringify(baseData), {
+        status: 200,
+        headers: { 'X-Resource-Version': '10' },
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = renderHook(() => useTreasury(), { wrapper });
+    await waitFor(() => expect(result.result.current).not.toBeNull());
+
+    await act(async () => {
+      await result.result.current.updateBaseSalary(1);
+    });
+    await act(async () => {
+      await result.result.current.updateBaseSalary(2);
+    });
+
+    const mutations = fetchMock.mock.calls.filter(
+      (c) => (c[1] as RequestInit | undefined)?.method === 'PATCH',
+    );
+    const firstHeaders = mutations[0][1] as RequestInit;
+    const secondHeaders = mutations[1][1] as RequestInit;
+    expect((firstHeaders.headers as Record<string, string>)['If-Match']).toBe('10');
+    expect((secondHeaders.headers as Record<string, string>)['If-Match']).toBe('11');
+  });
+
+  test('given a network error, then an error notification is surfaced', async () => {
+    fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      if (method === 'GET') {
+        return new Response(JSON.stringify(baseData), {
+          status: 200,
+          headers: { 'X-Resource-Version': '0' },
+        });
+      }
+      throw new Error('network down');
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = renderHook(() => useTreasury(), { wrapper });
+    await waitFor(() => expect(result.result.current).not.toBeNull());
+
+    await act(async () => {
+      await result.result.current.updateBaseSalary(1);
+    });
+
+    expect(result.result.current.notification?.kind).toBe('error');
+  });
+
+  test('given dismissNotification is called, then notification clears', async () => {
+    fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      if (method === 'GET') {
+        return new Response(JSON.stringify(baseData), {
+          status: 200,
+          headers: { 'X-Resource-Version': '0' },
+        });
+      }
+      throw new Error('boom');
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const result = renderHook(() => useTreasury(), { wrapper });
+    await waitFor(() => expect(result.result.current).not.toBeNull());
+    await act(async () => {
+      await result.result.current.updateBaseSalary(1);
+    });
+    expect(result.result.current.notification).not.toBeNull();
+    act(() => {
+      result.result.current.dismissNotification();
+    });
+    expect(result.result.current.notification).toBeNull();
   });
 });
 

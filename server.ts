@@ -5,7 +5,7 @@ import 'dotenv/config';
 import {
   Environment,
   createApp,
-  defaultData,
+  buildSeedData,
   resolveDbPath,
   resolveEnvironment,
   runMigrations,
@@ -17,7 +17,7 @@ const __dirname = path.resolve();
 
 const dbPath = resolveDbPath(environment, __dirname);
 
-const db = await JSONFilePreset<TreasuryData>(dbPath, defaultData);
+const db = await JSONFilePreset<TreasuryData>(dbPath, buildSeedData());
 
 await runMigrations(db);
 

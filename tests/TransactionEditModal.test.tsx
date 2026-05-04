@@ -77,6 +77,7 @@ const setupTreasury = (transactions: Transaction[]) => {
         semiMonthlyDays: [15, 30],
         monthlyDay: 1,
       },
+    version: 0,
     },
     commitUpdate,
     updateSeries,

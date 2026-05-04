@@ -125,6 +125,7 @@ const setupTreasury = (transactions: Transaction[]) => {
         semiMonthlyDays: [15, 30],
         monthlyDay: 1,
       },
+    version: 0,
     },
     getFullTypeName: (id) => (id === 't4' ? 'Housing' : id),
     checkIsIncome: () => false,

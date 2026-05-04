@@ -30,6 +30,7 @@ function makeTreasury(overrides?: Partial<{ data: TreasuryData; totalLiquidity: 
       semiMonthlyDays: [15, 30],
       monthlyDay: 1,
     },
+  version: 0,
   };
   return {
     data: overrides?.data ?? data,
@@ -105,6 +106,7 @@ describe('useRoadmap masterCycles — bi-weekly archetype', () => {
           semiMonthlyDays: [15, 30],
           monthlyDay: 1,
         },
+      version: 0,
       },
     });
     const { result } = renderHook(() =>
@@ -126,6 +128,7 @@ describe('useRoadmap masterCycles — semi-monthly archetype', () => {
           semiMonthlyDays: [15, 30],
           monthlyDay: 1,
         },
+      version: 0,
       },
     });
     const { result } = renderHook(() =>
@@ -145,6 +148,7 @@ describe('useRoadmap masterCycles — semi-monthly archetype', () => {
           semiMonthlyDays: [15, 30],
           monthlyDay: 1,
         },
+      version: 0,
       },
     });
     const { result } = renderHook(() =>
@@ -167,6 +171,7 @@ describe('useRoadmap masterCycles — monthly archetype', () => {
           semiMonthlyDays: [15, 30],
           monthlyDay: 1,
         },
+      version: 0,
       },
     });
     const { result } = renderHook(() =>

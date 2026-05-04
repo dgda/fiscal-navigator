@@ -6,6 +6,7 @@ import TransactionCategoriesSection from './TransactionCategoriesSection/Transac
 import AccountsSection from './AccountsSection/AccountsSection';
 import PayoutSection from './PayoutSection/PayoutSection';
 import CurrencySection from './CurrencySection/CurrencySection';
+import RestoreSection from './RestoreSection/RestoreSection';
 
 const SettingsPanel: React.FC = () => {
   const { data, sync, updateAccounts, updateTypes } = useTreasury();
@@ -81,6 +82,8 @@ const SettingsPanel: React.FC = () => {
               saveEdit={saveEdit}
             />
           </div>
+
+          <RestoreSection sectionClass={sectionClass} headerClass={headerClass} />
         </div>
       </main>
 

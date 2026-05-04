@@ -32,6 +32,7 @@ const baseData: TreasuryData = {
     semiMonthlyDays: [15, 30],
     monthlyDay: 1,
   },
+version: 0,
 };
 
 beforeEach(() => {

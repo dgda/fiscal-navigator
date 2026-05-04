@@ -12,6 +12,8 @@ import {
   resolveDbPath,
   resolveEnvironment,
   Environment,
+  buildSeedAnchorDate,
+  buildSeedData,
 } from '../src/server/app';
 import type { TreasuryData } from '../src/types';
 
@@ -116,20 +118,21 @@ describe('POST /api/update happy path', () => {
 });
 
 describe('POST /api/update edge cases (locks current monolithic behavior)', () => {
-  test('given empty object body, then writes empty object to db', async () => {
+  test('given empty object body, then writes that body to db (version field is stamped on persist)', async () => {
     const db = buildDb();
     const app = createApp(db);
     const res = await request(app).post('/api/update').send({});
     expect(res.status).toBe(200);
-    expect(db.data).toEqual({});
+    // persist() stamps version on plain-object writes, so the legacy /api/update with {} ends up { version: 1 }.
+    expect(db.data).toEqual({ version: 1 });
   });
 
-  test('given partial body, then overwrites entire document with the partial', async () => {
+  test('given partial body, then overwrites entire document with the partial (plus stamped version)', async () => {
     const db = buildDb();
     const app = createApp(db);
     const partial = { baseSalary: 50000 };
     await request(app).post('/api/update').send(partial);
-    expect(db.data).toEqual(partial);
+    expect(db.data).toEqual({ baseSalary: 50000, version: 1 });
     expect((db.data as Partial<TreasuryData>).accounts).toBeUndefined();
     expect((db.data as Partial<TreasuryData>).preferences).toBeUndefined();
   });
@@ -204,7 +207,7 @@ describe('POST /api/update edge cases (locks current monolithic behavior)', () =
       .type('form')
       .send({ baseSalary: '321', name: 'urlencoded-write' });
     expect(res.status).toBe(200);
-    expect(db.data).toEqual({ baseSalary: '321', name: 'urlencoded-write' });
+    expect(db.data).toEqual({ baseSalary: '321', name: 'urlencoded-write', version: 1 });
   });
 
   test('given urlencoded body exceeding payload limit, then returns 413', async () => {
@@ -476,6 +479,217 @@ describe('Modular endpoints', () => {
   });
 });
 
+describe('Optimistic concurrency (If-Match / X-Resource-Version)', () => {
+  test('given GET /api/data, then X-Resource-Version header reflects current version', async () => {
+    const db = buildDb({ version: 5 });
+    const app = createApp(db);
+    const res = await request(app).get('/api/data');
+    expect(res.headers['x-resource-version']).toBe('5');
+  });
+
+  test('given a mutation with no If-Match, then it succeeds (header is optional)', async () => {
+    const db = buildDb({ version: 0 });
+    const app = createApp(db);
+    const res = await request(app).patch('/api/preferences').send({ theme: 'dark' });
+    expect(res.status).toBe(200);
+    expect(res.headers['x-resource-version']).toBe('1');
+  });
+
+  test('given a mutation with matching If-Match, then it succeeds and bumps the version', async () => {
+    const db = buildDb({ version: 7 });
+    const app = createApp(db);
+    const res = await request(app)
+      .patch('/api/preferences')
+      .set('If-Match', '7')
+      .send({ theme: 'dark' });
+    expect(res.status).toBe(200);
+    expect(res.headers['x-resource-version']).toBe('8');
+  });
+
+  test('given a mutation with stale If-Match, then 409 with current version, no write', async () => {
+    const db = buildDb({ version: 12 });
+    const writeSpy = vi.spyOn(db, 'write').mockResolvedValue();
+    const app = createApp(db);
+    const res = await request(app)
+      .patch('/api/preferences')
+      .set('If-Match', '5')
+      .send({ theme: 'dark' });
+    expect(res.status).toBe(409);
+    expect(res.body.currentVersion).toBe(12);
+    expect(res.headers['x-resource-version']).toBe('12');
+    expect(writeSpy).not.toHaveBeenCalled();
+  });
+
+  test('given a mutation with non-numeric If-Match, then 400', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const res = await request(app)
+      .patch('/api/preferences')
+      .set('If-Match', 'banana')
+      .send({ theme: 'dark' });
+    expect(res.status).toBe(400);
+  });
+
+  test('given two sequential PATCHes with matching versions, then both succeed and version increments', async () => {
+    const db = buildDb({ version: 0 });
+    const app = createApp(db);
+    const r1 = await request(app)
+      .patch('/api/preferences')
+      .set('If-Match', '0')
+      .send({ theme: 'dark' });
+    expect(r1.status).toBe(200);
+    const r2 = await request(app)
+      .patch('/api/preferences')
+      .set('If-Match', '1')
+      .send({ theme: 'light' });
+    expect(r2.status).toBe(200);
+    expect(db.data.version).toBe(2);
+  });
+});
+
+describe('Backups list + restore', () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'treasury-restore-'));
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  test('given GET /api/backups with no dbPath configured, then 503', async () => {
+    const db = buildDb();
+    const app = createApp(db);
+    const res = await request(app).get('/api/backups');
+    expect(res.status).toBe(503);
+  });
+
+  test('given GET /api/backups with no backups on disk, then returns an empty list', async () => {
+    const dbPath = path.join(tmpDir, 'db.json');
+    const db = buildDb();
+    const app = createApp(db, { dbPath });
+    const res = await request(app).get('/api/backups');
+    expect(res.status).toBe(200);
+    expect(res.body.backups).toEqual([]);
+  });
+
+  test('given a rolling backup and a snapshot, then GET /api/backups lists both newest-first', async () => {
+    const dbPath = path.join(tmpDir, 'db.json');
+    await fs.writeFile(dbPath, JSON.stringify({ baseSalary: 1, version: 1 }));
+    await fs.writeFile(`${dbPath}.bak`, JSON.stringify({ baseSalary: 0, version: 0 }));
+    await fs.mkdir(path.join(tmpDir, 'backups'), { recursive: true });
+    await fs.writeFile(
+      path.join(tmpDir, 'backups', 'db.2026-01-01.json'),
+      JSON.stringify({ baseSalary: 0, version: 0 }),
+    );
+    const db = buildDb();
+    const app = createApp(db, { dbPath });
+    const res = await request(app).get('/api/backups');
+    expect(res.status).toBe(200);
+    expect(res.body.backups).toHaveLength(2);
+    expect(res.body.backups.map((b: { kind: string }) => b.kind)).toContain('rolling');
+    expect(res.body.backups.map((b: { kind: string }) => b.kind)).toContain('snapshot');
+  });
+
+  test('given POST /api/backups/restore for a snapshot, then db.data is replaced and version bumped', async () => {
+    const dbPath = path.join(tmpDir, 'db.json');
+    await fs.writeFile(dbPath, JSON.stringify({ baseSalary: 999, version: 5 }));
+    await fs.mkdir(path.join(tmpDir, 'backups'), { recursive: true });
+    await fs.writeFile(
+      path.join(tmpDir, 'backups', 'db.2026-01-01.json'),
+      JSON.stringify({ baseSalary: 1, version: 1, marker: 'restored' }),
+    );
+    const db = buildDb({ baseSalary: 999, version: 5 });
+    const app = createApp(db, { dbPath });
+    const res = await request(app)
+      .post('/api/backups/restore')
+      .send({ filename: 'db.2026-01-01.json' });
+    expect(res.status).toBe(200);
+    expect((db.data as TreasuryData & { marker?: string }).marker).toBe('restored');
+    expect(db.data.version).toBe(2); // restored version=1, persist bumps to 2
+  });
+
+  test('given POST /api/backups/restore with path traversal in filename, then 400', async () => {
+    const dbPath = path.join(tmpDir, 'db.json');
+    const db = buildDb();
+    const app = createApp(db, { dbPath });
+    const res = await request(app)
+      .post('/api/backups/restore')
+      .send({ filename: '../../../etc/passwd' });
+    expect(res.status).toBe(400);
+  });
+
+  test('given POST /api/backups/restore for a missing file, then 404', async () => {
+    const dbPath = path.join(tmpDir, 'db.json');
+    const db = buildDb();
+    const app = createApp(db, { dbPath });
+    const res = await request(app)
+      .post('/api/backups/restore')
+      .send({ filename: 'db.2099-01-01.json' });
+    expect(res.status).toBe(404);
+  });
+
+  test('given POST /api/backups/restore with stale If-Match, then 409 with no replacement', async () => {
+    const dbPath = path.join(tmpDir, 'db.json');
+    await fs.mkdir(path.join(tmpDir, 'backups'), { recursive: true });
+    await fs.writeFile(
+      path.join(tmpDir, 'backups', 'db.2026-01-01.json'),
+      JSON.stringify({ marker: 'restored' }),
+    );
+    const db = buildDb({ baseSalary: 999, version: 10 });
+    const app = createApp(db, { dbPath });
+    const res = await request(app)
+      .post('/api/backups/restore')
+      .set('If-Match', '0')
+      .send({ filename: 'db.2026-01-01.json' });
+    expect(res.status).toBe(409);
+    expect((db.data as TreasuryData & { marker?: string }).marker).toBeUndefined();
+  });
+});
+
+describe('buildSeedAnchorDate / buildSeedData', () => {
+  test('given today is a Friday, then buildSeedAnchorDate returns today', () => {
+    // 2026-05-08 is a Friday
+    expect(buildSeedAnchorDate(new Date('2026-05-08T12:00:00Z'))).toBe('2026-05-08');
+  });
+
+  test('given today is a Monday, then buildSeedAnchorDate returns the previous Friday', () => {
+    // 2026-05-04 is a Monday → previous Friday is 2026-05-01
+    expect(buildSeedAnchorDate(new Date('2026-05-04T12:00:00Z'))).toBe('2026-05-01');
+  });
+
+  test('given today is a Saturday, then buildSeedAnchorDate returns the previous (yesterday) Friday', () => {
+    // 2026-05-09 is a Saturday → previous Friday is 2026-05-08
+    expect(buildSeedAnchorDate(new Date('2026-05-09T12:00:00Z'))).toBe('2026-05-08');
+  });
+
+  test('given a non-Friday target weekday, then buildSeedAnchorDate snaps to that weekday', () => {
+    // 2026-05-04 is a Monday; target Monday → today
+    expect(buildSeedAnchorDate(new Date('2026-05-04T12:00:00Z'), 1)).toBe('2026-05-04');
+  });
+
+  test('buildSeedData returns a deep-ish copy with a freshly computed anchorDate', () => {
+    const seed = buildSeedData();
+    expect(seed.payoutConfig.anchorDate).not.toBe(defaultData.payoutConfig.anchorDate);
+    expect(seed.accounts).not.toBe(defaultData.accounts);
+    expect(seed.preferences).not.toBe(defaultData.preferences);
+    expect(seed.payoutConfig).not.toBe(defaultData.payoutConfig);
+  });
+
+  test('buildSeedData preserves every other defaultData field', () => {
+    const seed = buildSeedData();
+    expect(seed.preferences).toEqual(defaultData.preferences);
+    expect(seed.accounts).toEqual(defaultData.accounts);
+    expect(seed.types).toEqual(defaultData.types);
+    expect(seed.transactions).toEqual([]);
+    expect(seed.baseSalary).toBe(defaultData.baseSalary);
+    expect(seed.payoutConfig.archetype).toBe(defaultData.payoutConfig.archetype);
+    expect(seed.payoutConfig.fixedIntervalDays).toBe(defaultData.payoutConfig.fixedIntervalDays);
+    expect(seed.version).toBe(0);
+  });
+});
+
 describe('CORS', () => {
   test('given any GET request, then Access-Control-Allow-Origin header is *', async () => {
     const db = buildDb();
@@ -573,16 +787,18 @@ describe('runMigrations', () => {
     expect(writeSpy).toHaveBeenCalledTimes(1);
   });
 
-  test('given db with empty data object, then both fields populated and two writes occur', async () => {
+  test('given db with empty data object, then prefs, payout, and version are all populated and three writes occur', async () => {
     const adapter = new Memory<TreasuryData>();
     const db = new Low<TreasuryData>(adapter, {} as TreasuryData);
     const writeSpy = vi.spyOn(db, 'write').mockResolvedValue();
     const result = await runMigrations(db);
     expect(result.migratedPreferences).toBe(true);
     expect(result.migratedPayoutConfig).toBe(true);
+    expect(result.migratedVersion).toBe(true);
     expect(db.data.preferences).toEqual(defaultData.preferences);
     expect(db.data.payoutConfig).toEqual(defaultData.payoutConfig);
-    expect(writeSpy).toHaveBeenCalledTimes(2);
+    expect(db.data.version).toBe(0);
+    expect(writeSpy).toHaveBeenCalledTimes(3);
   });
 
   test('given runMigrations is idempotent on already-migrated db, then second invocation is a no-op', async () => {
