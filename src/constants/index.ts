@@ -8,7 +8,16 @@ const getBaseUrl = () => {
 
 export const API_URL = getBaseUrl();
 // export const API_URL = 'http://localhost:3001/api';
-export const CURRENCY_SYMBOL = '₱';
+
+/** Default currency code if user preferences haven't loaded yet or are missing. */
+export const DEFAULT_CURRENCY_CODE = 'PHP';
+/** Default currency symbol — used as a fallback in the same conditions. */
+export const DEFAULT_CURRENCY_SYMBOL = '₱';
+/**
+ * @deprecated Use `useTreasury().currencySymbol` instead. Kept for backward compatibility
+ * with components that haven't been migrated yet.
+ */
+export const CURRENCY_SYMBOL = DEFAULT_CURRENCY_SYMBOL;
 
 // These are now defaults used only for initial state or fallbacks
 export const DEFAULT_ANCHOR_DATE = '2026-02-06';

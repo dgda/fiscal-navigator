@@ -2,6 +2,7 @@ import React from 'react';
 import { MonthData } from '../types';
 import ValueRow from './ValueRow';
 import { Target } from 'lucide-react';
+import { useTreasury } from '../../../../context/TreasuryContext';
 
 interface GrandEquationProps {
   monthData: MonthData;
@@ -9,6 +10,7 @@ interface GrandEquationProps {
 
 const GrandEquation: React.FC<GrandEquationProps> = (props) => {
   const { monthData } = props;
+  const { currencySymbol } = useTreasury();
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-black/[0.03] bg-white p-5 shadow-sm dark:border-white/5 dark:bg-white/[0.02]">
@@ -44,7 +46,8 @@ const GrandEquation: React.FC<GrandEquationProps> = (props) => {
               Reality Check
             </p>
             <p className="text-lg font-black tabular-nums text-slate-900 dark:text-white">
-              ₱{monthData.endActual.toLocaleString()}
+              {currencySymbol}
+              {monthData.endActual.toLocaleString()}
             </p>
           </div>
         </div>
@@ -66,7 +69,8 @@ const GrandEquation: React.FC<GrandEquationProps> = (props) => {
               Projected Final
             </p>
             <p className="text-lg font-black tabular-nums text-blue-700 dark:text-blue-400">
-              ₱{monthData.endProjected.toLocaleString()}
+              {currencySymbol}
+              {monthData.endProjected.toLocaleString()}
             </p>
           </div>
         </div>

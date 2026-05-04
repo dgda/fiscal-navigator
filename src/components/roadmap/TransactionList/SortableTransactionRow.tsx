@@ -2,6 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, CheckCircle2, Circle, Repeat, Trash2 } from 'lucide-react';
 import { Account, Transaction } from '../../../types';
+import { useTreasury } from '../../../context/TreasuryContext';
 
 interface SortableTransactionRowProps {
   tx: Transaction;
@@ -30,6 +31,7 @@ const SortableTransactionRow = (props: SortableTransactionRowProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: tx.id,
   });
+  const { currencySymbol } = useTreasury();
 
   const isIncome = checkIsIncome(tx.typeId);
   const isTransfer = checkIsTransfer(tx.typeId);
@@ -143,7 +145,7 @@ const SortableTransactionRow = (props: SortableTransactionRowProps) => {
         <span
           className={`font-mono text-[11px] font-black tabular-nums tracking-tight ${getCurrencyColor()}`}
         >
-          <span className="mr-px text-[9px] font-medium opacity-40">₱</span>
+          <span className="mr-px text-[9px] font-medium opacity-40">{currencySymbol}</span>
           {tx.amount.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,

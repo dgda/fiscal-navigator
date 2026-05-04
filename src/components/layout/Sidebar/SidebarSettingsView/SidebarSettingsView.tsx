@@ -10,7 +10,7 @@ interface SidebarSettingsViewProps {
 
 const SidebarSettingsView: React.FC<SidebarSettingsViewProps> = (props) => {
   const { setActiveView, inputGroupClass, inputBaseClass } = props;
-  const { data, updateBaseSalary } = useTreasury();
+  const { data, updateBaseSalary, currencySymbol } = useTreasury();
 
   return (
     <div className="space-y-6">
@@ -31,7 +31,7 @@ const SidebarSettingsView: React.FC<SidebarSettingsViewProps> = (props) => {
           </label>
           <div className={inputGroupClass}>
             <div className="absolute left-3 text-emerald-500">
-              <span className="font-mono text-[12px] font-bold">₱</span>
+              <span className="font-mono text-[12px] font-bold">{currencySymbol}</span>
             </div>
             <input
               type="number"

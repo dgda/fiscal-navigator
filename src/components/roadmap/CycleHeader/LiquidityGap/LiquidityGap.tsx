@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertTriangle, ShieldCheck, LucideIcon, EyeClosed } from 'lucide-react';
 import { DEFAULT_HIDDEN_AMOUNT } from '../../../../constants';
 import { CycleStatus } from '../../../../types/roadmap';
+import { useTreasury } from '../../../../context/TreasuryContext';
 
 interface LiquidityGapProps {
   label: string;
@@ -30,6 +31,7 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
     isProjected = false,
     cycleStatus,
   } = props;
+  const { currencySymbol } = useTreasury();
   const isFuture = cycleStatus === CycleStatus.FUTURE;
   const Icon: LucideIcon =
     isFuture && !isProjected ? EyeClosed : isForecasting ? AlertTriangle : ShieldCheck;
@@ -104,13 +106,15 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-[9px] text-slate-500">{currentLiquidityLabel}</span>
                   <span className="font-mono text-[9px] font-bold text-blue-700 dark:text-blue-500">
-                    ₱{formatCurrency(currentLiquidity)}
+                    {currencySymbol}
+                    {formatCurrency(currentLiquidity)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-[9px] text-slate-500">{comparisonLabel}</span>
                   <span className="font-mono text-[9px] font-bold text-rose-500">
-                    -₱{formatCurrency(comparisonValue)}
+                    -{currencySymbol}
+                    {formatCurrency(comparisonValue)}
                   </span>
                 </div>
                 <div className="mt-1 flex items-center justify-between gap-4 border-t border-black/5 pt-1 dark:border-white/5">
@@ -120,7 +124,8 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
                   <span
                     className={`font-mono text-[9px] font-black ${marginValue >= 0 ? 'text-emerald-600' : 'text-rose-700 dark:text-rose-600'}`}
                   >
-                    ₱{formatCurrency(marginValue)}
+                    {currencySymbol}
+                    {formatCurrency(marginValue)}
                   </span>
                 </div>
               </div>
@@ -152,7 +157,8 @@ const LiquidityGapIndicator: React.FC<LiquidityGapProps> = (props) => {
           <span
             className={`font-mono text-[11px] font-black tracking-tight ${currentStyles.textMono}`}
           >
-            {!isFuture || (isFuture && isProjected) ? (marginValue < 0 ? '-' : '') : ''}₱
+            {!isFuture || (isFuture && isProjected) ? (marginValue < 0 ? '-' : '') : ''}
+            {currencySymbol}
             {!isFuture || (isFuture && isProjected)
               ? formatCurrency(Math.abs(marginValue))
               : DEFAULT_HIDDEN_AMOUNT}

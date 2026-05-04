@@ -40,7 +40,7 @@ const AccountsSection: React.FC<AccountsSectionProps> = (props) => {
     toggleNode,
   } = props;
 
-  const { data, computedAccounts } = useTreasury();
+  const { data, computedAccounts, currencySymbol } = useTreasury();
 
   return (
     <section className={sectionClass}>
@@ -137,7 +137,8 @@ const AccountsSection: React.FC<AccountsSectionProps> = (props) => {
                         </span>
                       )}
                       <span className="font-mono text-[10px] font-bold text-slate-400">
-                        ₱{acc.balance?.toLocaleString()}
+                        {currencySymbol}
+                        {acc.balance?.toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -184,7 +185,8 @@ const AccountsSection: React.FC<AccountsSectionProps> = (props) => {
                             !data.types.find((x) => x.id === t.typeId)?.name.includes('Income')
                               ? '-'
                               : '+'}
-                            ₱{t.amount.toLocaleString()}
+                            {currencySymbol}
+                            {t.amount.toLocaleString()}
                           </span>
                         </div>
                       ))

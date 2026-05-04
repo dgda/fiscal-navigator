@@ -41,6 +41,8 @@ export interface Transaction {
 export interface UserPreferences {
   theme: 'light' | 'dark';
   useSystemDefault: boolean;
+  /** ISO 4217 currency code, e.g. 'PHP', 'USD'. Defaults to 'PHP'. */
+  currency: string;
 }
 
 export type PayoutArchetype = 'bi-weekly' | 'semi-monthly' | 'monthly';

@@ -24,7 +24,7 @@ const baseData: TreasuryData = {
   ],
   transactions: [],
   baseSalary: 0,
-  preferences: { theme: 'light', useSystemDefault: true },
+  preferences: { theme: 'light', useSystemDefault: true, currency: 'PHP' },
   payoutConfig: {
     archetype: 'bi-weekly',
     fixedIntervalDays: 14,

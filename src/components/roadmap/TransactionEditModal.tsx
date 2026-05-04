@@ -35,6 +35,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
     getFullTypeName,
     checkIsTransfer,
     renderTypeOptions,
+    currencySymbol,
   } = useTreasury();
 
   // Load master cycles to populate the cycle selector
@@ -413,7 +414,7 @@ const TransactionEditModal: React.FC<EditModalProps> = ({ transactionId, onClose
                             label="Amount"
                             oldVal={s.amount}
                             newVal={nextState.amount}
-                            formatFn={(v) => `₱${Number(v).toLocaleString()}`}
+                            formatFn={(v) => `${currencySymbol}${Number(v).toLocaleString()}`}
                           />
                           <DiffRow
                             label="Category"

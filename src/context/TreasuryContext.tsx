@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import getSymbolFromCurrency from 'currency-symbol-map';
 import {
   TreasuryData,
   Transaction,
@@ -7,7 +8,7 @@ import {
   PayoutConfig,
   UserPreferences,
 } from '../types';
-import { API_URL } from '../constants';
+import { API_URL, DEFAULT_CURRENCY_CODE, DEFAULT_CURRENCY_SYMBOL } from '../constants';
 
 interface TreasuryContextType {
   data: TreasuryData;
@@ -21,6 +22,10 @@ interface TreasuryContextType {
   updateTypes: (types: TransactionType[]) => Promise<void>;
   computedAccounts: Account[];
   totalLiquidity: number;
+  /** Symbol for the user's selected currency (e.g. '₱' for PHP). Falls back to '₱' if unset. */
+  currencySymbol: string;
+  /** ISO 4217 currency code (e.g. 'PHP'). Falls back to 'PHP' if unset. */
+  currencyCode: string;
   renderTypeOptions: () => React.ReactNode;
   checkIsIncome: (typeId: string) => boolean;
   checkIsTransfer: (typeId: string) => boolean;
@@ -253,6 +258,9 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const totalLiquidity = computedAccounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
 
+  const currencyCode = data?.preferences?.currency || DEFAULT_CURRENCY_CODE;
+  const currencySymbol = getSymbolFromCurrency(currencyCode) || DEFAULT_CURRENCY_SYMBOL;
+
   const renderTypeOptions = (parentId: string | null = null, depth = 0) => {
     if (!data) return null;
     return data.types
@@ -394,6 +402,8 @@ export const TreasuryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         updateTypes,
         computedAccounts,
         totalLiquidity,
+        currencySymbol,
+        currencyCode,
         renderTypeOptions,
         checkIsIncome,
         checkIsTransfer,

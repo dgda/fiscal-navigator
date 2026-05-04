@@ -18,7 +18,7 @@ const seed = (baseSalary: number): TreasuryData => ({
   types: [],
   transactions: [],
   baseSalary,
-  preferences: { theme: 'light', useSystemDefault: true },
+  preferences: { theme: 'light', useSystemDefault: true, currency: 'PHP' },
   payoutConfig: {
     archetype: 'bi-weekly',
     fixedIntervalDays: 14,

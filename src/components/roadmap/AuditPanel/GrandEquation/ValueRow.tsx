@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTreasury } from '../../../../context/TreasuryContext';
 
 interface ValueRowProps {
   label: string;
@@ -9,6 +10,7 @@ interface ValueRowProps {
 
 const ValueRow: React.FC<ValueRowProps> = (props) => {
   const { label, value, math, color = 'text-slate-900 dark:text-white' } = props;
+  const { currencySymbol } = useTreasury();
 
   return (
     <div className="flex items-center justify-between">
@@ -21,7 +23,7 @@ const ValueRow: React.FC<ValueRowProps> = (props) => {
         </p>
       </div>
       <p className={`text-[11px] font-black tabular-nums ${color}`}>
-        <span className="mr-0.5 font-light opacity-50">₱</span>
+        <span className="mr-0.5 font-light opacity-50">{currencySymbol}</span>
         {value.toLocaleString()}
       </p>
     </div>

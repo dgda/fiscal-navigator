@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Transaction } from '../../../types';
 import { X, AlertCircle, Check, DollarSign } from 'lucide-react';
-import { CURRENCY_SYMBOL } from '../../../constants';
+import { useTreasury } from '../../../context/TreasuryContext';
 
 interface BalanceReconciliationModalProps {
   isOpen: boolean;
@@ -23,6 +23,7 @@ export const BalanceReconciliationModal: React.FC<BalanceReconciliationModalProp
   onSkip,
 }) => {
   const [adjustments, setAdjustments] = useState<Record<string, number>>({});
+  const { currencySymbol: CURRENCY_SYMBOL } = useTreasury();
 
   const totalAdjusted = Object.values(adjustments).reduce((sum, val) => sum + val, 0);
   const remainingShortfall = Math.max(0, shortfallAmount - totalAdjusted);

@@ -5,6 +5,7 @@ import DeleteConfirmationModal from './DeleteConfirmationModal/DeleteConfirmatio
 import TransactionCategoriesSection from './TransactionCategoriesSection/TransactionCategoriesSection';
 import AccountsSection from './AccountsSection/AccountsSection';
 import PayoutSection from './PayoutSection/PayoutSection';
+import CurrencySection from './CurrencySection/CurrencySection';
 
 const SettingsPanel: React.FC = () => {
   const { data, sync, updateAccounts, updateTypes } = useTreasury();
@@ -51,6 +52,8 @@ const SettingsPanel: React.FC = () => {
     <div className="flex h-full flex-col overflow-hidden bg-[#F5F5F7] dark:bg-[#1E1E1F]">
       <main className="flex-1 overflow-y-auto p-6 lg:p-10">
         <div className="mx-auto max-w-5xl space-y-8">
+          <CurrencySection sectionClass={sectionClass} headerClass={headerClass} />
+
           <PayoutSection sectionClass={sectionClass} headerClass={headerClass} />
 
           <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">

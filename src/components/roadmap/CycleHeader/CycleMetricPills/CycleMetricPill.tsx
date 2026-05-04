@@ -1,5 +1,6 @@
 import { LucideProps } from 'lucide-react';
 import React from 'react';
+import { useTreasury } from '../../../../context/TreasuryContext';
 
 export interface CycleMetricPillsProps {
   label: string;
@@ -14,6 +15,7 @@ export interface CycleMetricPillsProps {
 
 const CycleMetricPill: React.FC<CycleMetricPillsProps> = (props) => {
   const { label, value, icon: Icon, colorClass, valueColorClass, tooltipContent } = props;
+  const { currencySymbol } = useTreasury();
 
   return (
     <div
@@ -37,7 +39,7 @@ const CycleMetricPill: React.FC<CycleMetricPillsProps> = (props) => {
       <span
         className={`truncate font-mono text-[9.5px] font-black tabular-nums tracking-tighter ${valueColorClass}`}
       >
-        <span className="mr-px font-sans text-[8px] opacity-50">₱</span>
+        <span className="mr-px font-sans text-[8px] opacity-50">{currencySymbol}</span>
         {value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </span>
     </div>

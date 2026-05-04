@@ -20,7 +20,7 @@ const baseData: TreasuryData = {
   ],
   transactions: [],
   baseSalary: 70000,
-  preferences: { theme: 'light', useSystemDefault: true },
+  preferences: { theme: 'light', useSystemDefault: true, currency: 'PHP' },
   payoutConfig: {
     archetype: 'bi-weekly',
     fixedIntervalDays: 14,
@@ -353,7 +353,7 @@ describe('TreasuryContext mutations — updatePreferences / updatePayoutConfig',
     await act(async () => {
       await result.current.updatePreferences({ theme: 'dark' });
     });
-    expect(result.current.data.preferences).toEqual({ theme: 'dark', useSystemDefault: true });
+    expect(result.current.data.preferences).toEqual({ theme: 'dark', useSystemDefault: true, currency: 'PHP' });
   });
 
   test('given updatePayoutConfig with partial fields, then existing config is merged', async () => {
@@ -363,6 +363,49 @@ describe('TreasuryContext mutations — updatePreferences / updatePayoutConfig',
     });
     expect(result.current.data.payoutConfig.archetype).toBe('monthly');
     expect(result.current.data.payoutConfig.fixedIntervalDays).toBe(14);
+  });
+});
+
+describe('TreasuryContext currency', () => {
+  test('given preferences.currency = PHP, then currencySymbol is ₱ and currencyCode is PHP', async () => {
+    const { result } = await renderTreasury();
+    expect(result.current.currencyCode).toBe('PHP');
+    expect(result.current.currencySymbol).toBe('₱');
+  });
+
+  test('given preferences.currency = USD, then currencySymbol is $', async () => {
+    const { result } = await renderTreasury({
+      ...baseData,
+      preferences: { ...baseData.preferences, currency: 'USD' },
+    });
+    expect(result.current.currencyCode).toBe('USD');
+    expect(result.current.currencySymbol).toBe('$');
+  });
+
+  test('given preferences.currency is missing on the wire, then defaults to PHP/₱ (no crash)', async () => {
+    const { result } = await renderTreasury({
+      ...baseData,
+      preferences: { theme: 'light', useSystemDefault: true } as never,
+    });
+    expect(result.current.currencyCode).toBe('PHP');
+    expect(result.current.currencySymbol).toBe('₱');
+  });
+
+  test('given an unknown currency code, then symbol falls back to ₱', async () => {
+    const { result } = await renderTreasury({
+      ...baseData,
+      preferences: { ...baseData.preferences, currency: 'ZZZ' },
+    });
+    expect(result.current.currencyCode).toBe('ZZZ');
+    expect(result.current.currencySymbol).toBe('₱');
+  });
+
+  test('given updatePreferences({ currency: "EUR" }), then currencySymbol becomes €', async () => {
+    const { result } = await renderTreasury();
+    await act(async () => {
+      await result.current.updatePreferences({ currency: 'EUR' });
+    });
+    expect(result.current.currencySymbol).toBe('€');
   });
 });
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { ShieldCheck, BarChart3, LucideIcon } from 'lucide-react';
 import { DEFAULT_HIDDEN_AMOUNT } from '../../../../constants';
 import { CycleStatus } from '../../../../types/roadmap';
+import { useTreasury } from '../../../../context/TreasuryContext';
 
 interface BalanceCardProps {
   label: string;
@@ -16,6 +17,7 @@ interface BalanceCardProps {
 
 const BalanceCard: React.FC<BalanceCardProps> = (props) => {
   const { label, value, prevValue, flowValue, prevLabel, flowLabel, variant, cycleStatus } = props;
+  const { currencySymbol } = useTreasury();
   const isBlue = variant === 'blue';
   const isFuture = cycleStatus === CycleStatus.FUTURE;
   const Icon: LucideIcon = isBlue ? ShieldCheck : BarChart3;
@@ -53,7 +55,8 @@ const BalanceCard: React.FC<BalanceCardProps> = (props) => {
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-[9px] text-slate-500">{prevLabel}</span>
                   <span className="font-mono text-[9px] font-bold text-slate-900 dark:text-white">
-                    ₱{format(prevValue)}
+                    {currencySymbol}
+                    {format(prevValue)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
@@ -61,7 +64,9 @@ const BalanceCard: React.FC<BalanceCardProps> = (props) => {
                   <span
                     className={`font-mono text-[9px] font-bold ${flowValue >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
                   >
-                    {flowValue >= 0 ? '+' : ''}₱{format(flowValue)}
+                    {flowValue >= 0 ? '+' : ''}
+                    {currencySymbol}
+                    {format(flowValue)}
                   </span>
                 </div>
               </div>
@@ -78,7 +83,9 @@ const BalanceCard: React.FC<BalanceCardProps> = (props) => {
       <span
         className={`font-mono text-[16px] font-black tracking-tight ${value < 0 ? 'text-red-500' : isBlue ? 'text-blue-700 dark:text-blue-300' : 'text-teal-700 dark:text-teal-300'}`}
       >
-        <span className="mr-0.5 font-sans text-[12px] font-medium opacity-40">₱</span>
+        <span className="mr-0.5 font-sans text-[12px] font-medium opacity-40">
+          {currencySymbol}
+        </span>
         {!isFuture || (isFuture && !isBlue) ? format(value) : DEFAULT_HIDDEN_AMOUNT}
       </span>
     </div>

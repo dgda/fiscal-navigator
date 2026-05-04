@@ -237,8 +237,16 @@ describe('Modular endpoints', () => {
     const app = createApp(db);
     const res = await request(app).patch('/api/preferences').send({ theme: 'dark' });
     expect(res.status).toBe(200);
-    expect(res.body.preferences).toEqual({ theme: 'dark', useSystemDefault: true });
-    expect(db.data.preferences).toEqual({ theme: 'dark', useSystemDefault: true });
+    expect(res.body.preferences).toEqual({
+      theme: 'dark',
+      useSystemDefault: true,
+      currency: 'PHP',
+    });
+    expect(db.data.preferences).toEqual({
+      theme: 'dark',
+      useSystemDefault: true,
+      currency: 'PHP',
+    });
   });
 
   test('given PATCH /api/preferences with non-object body, then returns 400', async () => {
@@ -542,14 +550,27 @@ describe('runMigrations', () => {
     expect(writeSpy).not.toHaveBeenCalled();
   });
 
-  test('given db with partial preferences (theme set, useSystemDefault missing), then NOT migrated, partial state preserved (locks current weakness)', async () => {
+  test('given db with partial preferences (theme set, useSystemDefault missing, no currency), then preferences object is preserved but currency is backfilled', async () => {
     const partial = { theme: 'dark' as const } as never;
     const db = buildDb({ preferences: partial });
     const writeSpy = vi.spyOn(db, 'write').mockResolvedValue();
     const result = await runMigrations(db);
     expect(result.migratedPreferences).toBe(false);
-    expect(db.data.preferences).toEqual(partial);
-    expect(writeSpy).not.toHaveBeenCalled();
+    expect(result.migratedCurrency).toBe(true);
+    expect(db.data.preferences.theme).toBe('dark');
+    expect(db.data.preferences.currency).toBe('PHP');
+    expect(writeSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('given db with full preferences but no currency, then currency is backfilled and write is called once', async () => {
+    const db = buildDb({
+      preferences: { theme: 'light', useSystemDefault: true } as never,
+    });
+    const writeSpy = vi.spyOn(db, 'write').mockResolvedValue();
+    const result = await runMigrations(db);
+    expect(result.migratedCurrency).toBe(true);
+    expect(db.data.preferences.currency).toBe('PHP');
+    expect(writeSpy).toHaveBeenCalledTimes(1);
   });
 
   test('given db with empty data object, then both fields populated and two writes occur', async () => {

@@ -19,7 +19,7 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
-  const { computedAccounts, totalLiquidity } = useTreasury();
+  const { computedAccounts, totalLiquidity, currencySymbol } = useTreasury();
   const { theme, toggleTheme, isSystemDefault, setUseSystemDefault } = useTheme();
 
   // Fetch global bufferDays (using 'all' mode for global runway)
@@ -66,7 +66,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
                 </span>
               </div>
               <span className="font-mono text-[9px] font-bold text-slate-400 dark:text-slate-500">
-                ₱
+                {currencySymbol}
                 {acc.balance?.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -125,7 +125,8 @@ const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => {
               Net Liquidity
             </span>
             <span className="font-mono text-[13px] font-bold tracking-tight text-slate-900 dark:text-white">
-              ₱{totalLiquidity.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              {currencySymbol}
+              {totalLiquidity.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </span>
           </div>
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-600 shadow-inner dark:bg-blue-500/20 dark:text-blue-400">

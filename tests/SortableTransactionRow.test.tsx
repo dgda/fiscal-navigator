@@ -15,6 +15,10 @@ import { SortableContext } from '@dnd-kit/sortable';
 import SortableTransactionRow from '../src/components/roadmap/TransactionList/SortableTransactionRow';
 import type { Account, Transaction } from '../src/types';
 
+vi.mock('../src/context/TreasuryContext', () => ({
+  useTreasury: () => ({ currencySymbol: '₱' }),
+}));
+
 const tx = (p: Partial<Transaction>): Transaction => ({
   id: p.id ?? 'tx1',
   name: p.name ?? 'Rent',

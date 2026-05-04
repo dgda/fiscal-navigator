@@ -17,7 +17,7 @@ const seed = (archetype: 'bi-weekly' | 'semi-monthly' | 'monthly'): TreasuryData
   types: [],
   transactions: [],
   baseSalary: 0,
-  preferences: { theme: 'light', useSystemDefault: true },
+  preferences: { theme: 'light', useSystemDefault: true, currency: 'PHP' },
   payoutConfig: {
     archetype,
     fixedIntervalDays: 14,

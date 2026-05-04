@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTreasury } from '../../../../context/TreasuryContext';
 
 interface DeltaModuleProps {
   title: string;
@@ -10,6 +11,7 @@ interface DeltaModuleProps {
 
 const DeltaModule: React.FC<DeltaModuleProps> = (props) => {
   const { title, actual, projected, formula, isExpense } = props;
+  const { currencySymbol } = useTreasury();
   const diff = projected - actual;
   const isUnder = diff > 0;
 
@@ -27,7 +29,8 @@ const DeltaModule: React.FC<DeltaModuleProps> = (props) => {
         <div
           className={`rounded-md px-1.5 py-0.5 text-[8px] font-black ${isUnder ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-500' : 'bg-rose-500/10 text-rose-700 dark:text-rose-500'}`}
         >
-          {isUnder ? 'UNDER' : 'OVER'} ₱{Math.abs(diff).toLocaleString()}
+          {isUnder ? 'UNDER' : 'OVER'} {currencySymbol}
+          {Math.abs(diff).toLocaleString()}
         </div>
       </div>
       <div className="mt-3 flex items-center gap-4">
@@ -42,7 +45,7 @@ const DeltaModule: React.FC<DeltaModuleProps> = (props) => {
             />
           </div>
           <p className="mt-1 text-[10px] font-black tabular-nums text-slate-900 dark:text-white">
-            <span className="mr-0.5 font-light opacity-40">₱</span>
+            <span className="mr-0.5 font-light opacity-40">{currencySymbol}</span>
             {actual.toLocaleString()}
           </p>
         </div>
@@ -51,7 +54,7 @@ const DeltaModule: React.FC<DeltaModuleProps> = (props) => {
             Target
           </p>
           <p className="mt-1 text-[10px] font-black tabular-nums text-slate-500 dark:text-slate-400">
-            <span className="mr-0.5 font-light opacity-40">₱</span>
+            <span className="mr-0.5 font-light opacity-40">{currencySymbol}</span>
             {projected.toLocaleString()}
           </p>
         </div>

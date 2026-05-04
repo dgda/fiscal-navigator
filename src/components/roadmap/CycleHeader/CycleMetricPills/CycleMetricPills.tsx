@@ -2,6 +2,7 @@ import React from 'react';
 import CycleMetricPill from './CycleMetricPill';
 import { ArrowUpRight, ArrowDownRight, Wallet, Target, PieChart } from 'lucide-react';
 import { CycleHeaders } from '../../../../types/roadmap';
+import { useTreasury } from '../../../../context/TreasuryContext';
 
 export interface CycleMetricPillsProps {
   cycleHeaders: CycleHeaders;
@@ -10,6 +11,7 @@ export interface CycleMetricPillsProps {
 const CycleMetricPills: React.FC<CycleMetricPillsProps> = (props) => {
   const { cycleHeaders } = props;
   const { INFLOW, PLANNED, CLEARED, MARGIN, SURPLUS } = cycleHeaders;
+  const { currencySymbol } = useTreasury();
   return (
     <div className="no-scrollbar flex items-center gap-1.5 overflow-visible pb-1">
       <CycleMetricPill
@@ -47,13 +49,15 @@ const CycleMetricPills: React.FC<CycleMetricPillsProps> = (props) => {
             <div className="flex items-center justify-between gap-3">
               <span className="text-[9px] text-slate-500">Paid In</span>
               <span className="font-mono text-[9px] font-bold text-emerald-600">
-                ₱{INFLOW.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                {currencySymbol}
+                {INFLOW.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">
               <span className="text-[9px] text-slate-500">Paid Out</span>
               <span className="font-mono text-[9px] font-bold text-rose-600">
-                ₱{CLEARED.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                {currencySymbol}
+                {CLEARED.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </span>
             </div>
           </div>
@@ -82,13 +86,15 @@ const CycleMetricPills: React.FC<CycleMetricPillsProps> = (props) => {
             <div className="flex items-center justify-between gap-3">
               <span className="text-[9px] text-slate-500">Target In</span>
               <span className="font-mono text-[9px] font-bold text-emerald-600">
-                ₱{INFLOW.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                {currencySymbol}
+                {INFLOW.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">
               <span className="text-[9px] text-slate-500">Target Out</span>
               <span className="font-mono text-[9px] font-bold text-rose-600">
-                ₱{PLANNED.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                {currencySymbol}
+                {PLANNED.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </span>
             </div>
           </div>

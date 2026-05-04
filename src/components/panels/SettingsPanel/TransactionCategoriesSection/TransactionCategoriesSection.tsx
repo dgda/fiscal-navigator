@@ -40,7 +40,7 @@ const TransactionCategoriesSection: React.FC<TransactionCategoriesSectionProps> 
     saveEdit,
   } = props;
 
-  const { data, renderTypeOptions } = useTreasury();
+  const { data, renderTypeOptions, currencySymbol } = useTreasury();
 
   const getTypeTotal = useMemo(() => {
     const memo: Record<string, number> = {};
@@ -99,7 +99,8 @@ const TransactionCategoriesSection: React.FC<TransactionCategoriesSectionProps> 
             )}
             {total > 0 && (
               <span className="font-mono text-[9px] font-black text-blue-500/70">
-                ₱{total.toLocaleString()}
+                {currencySymbol}
+                {total.toLocaleString()}
               </span>
             )}
           </div>
@@ -128,7 +129,10 @@ const TransactionCategoriesSection: React.FC<TransactionCategoriesSectionProps> 
                   className="flex justify-between px-2 py-1 text-[9px] font-medium text-slate-400"
                 >
                   <span>{tx.name}</span>
-                  <span className="font-mono">₱{tx.amount.toLocaleString()}</span>
+                  <span className="font-mono">
+                    {currencySymbol}
+                    {tx.amount.toLocaleString()}
+                  </span>
                 </div>
               ))}
             {children.map((c) => (

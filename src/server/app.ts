@@ -30,6 +30,7 @@ export const defaultData: TreasuryData = {
   preferences: {
     theme: 'light',
     useSystemDefault: true,
+    currency: 'PHP',
   },
   payoutConfig: {
     archetype: 'bi-weekly',
@@ -43,6 +44,7 @@ export const defaultData: TreasuryData = {
 export interface MigrationResult {
   migratedPreferences: boolean;
   migratedPayoutConfig: boolean;
+  migratedCurrency: boolean;
   writeCount: number;
 }
 
@@ -50,6 +52,7 @@ export async function runMigrations(db: Low<TreasuryData>): Promise<MigrationRes
   const result: MigrationResult = {
     migratedPreferences: false,
     migratedPayoutConfig: false,
+    migratedCurrency: false,
     writeCount: 0,
   };
 
@@ -66,6 +69,14 @@ export async function runMigrations(db: Low<TreasuryData>): Promise<MigrationRes
     db.data.payoutConfig = defaultData.payoutConfig;
     await db.write();
     result.migratedPayoutConfig = true;
+    result.writeCount += 1;
+  }
+
+  if (db.data.preferences && !db.data.preferences.currency) {
+    console.log('Migrating DB: Adding currency preference...');
+    db.data.preferences.currency = defaultData.preferences.currency;
+    await db.write();
+    result.migratedCurrency = true;
     result.writeCount += 1;
   }
 
